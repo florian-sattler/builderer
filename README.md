@@ -5,3 +5,9 @@ Container based mono repo builder(er) designed to build container based mono rep
 It's configuration is supplied via commandline. See `builderer --help` for details.
 
 Interested what's new? Look in the [Changelog](CHANGELOG.md)! 🧐
+
+# Installation
+
+```bash
+pip install builderer
+```
