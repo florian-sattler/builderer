@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added command line interface with config files using [Pydantic](https://docs.pydantic.dev/) and [Pydantic Argparse](https://pydantic-argparse.supimdos.com/)
 - Updated README.md to reflect changes
 - pin requirements and their dependencies using [pip compile](https://github.com/jazzband/pip-tools)
+- Added link to this changelog in [README.md](README.md)
 
 ### Changed
 
