@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated README.md to reflect changes
 - pin requirements and their dependencies using [pip compile](https://github.com/jazzband/pip-tools)
 
+### Changed
+
+- The `Builderer` object can now be imported directly from the package.
+
 ## [0.1.0] - 2023-02-07
 
 ### Added
