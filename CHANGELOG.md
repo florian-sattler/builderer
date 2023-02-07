@@ -12,5 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README
 - LICENSE
 - .gitignore
-- Builder-Package with [PEP 518 Metadata](https://peps.python.org/pep-0518/)
+- Builderer-Package with [PEP 518 Metadata](https://peps.python.org/pep-0518/)
 - Changelog
+- Use bump2version
