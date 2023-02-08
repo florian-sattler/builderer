@@ -1,0 +1,50 @@
+site_name: builderer
+site_description: Container based mono repo builder.
+strict: true
+site_url: https://builderer.florian-sattler.de/
+
+theme:
+  name: 'material'
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: deep orange
+    accent: deep orange
+    toggle:
+      icon: material/lightbulb-outline
+      name: "Switch to dark mode"
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: deep orange
+    accent: deep orange
+    toggle:
+      icon: material/lightbulb
+      name: "Switch to light mode"
+  features:
+    - content.tabs.link
+    - content.code.copy
+  logo: 'logo-white.svg'
+  favicon: 'favicon.png'
+
+repo_name: florian-sattler/builderer
+repo_url: https://github.com/florian-sattler/builderer
+edit_uri: edit/main/docs/
+
+nav:
+  - Overview: index.md
+  - Usage: usage.md
+  - Command Line Interface: cli.md
+  - Usage as library: library.md
+  - Changelog: changes.md
+
+markdown_extensions:
+  - tables
+  - markdown_include.include:
+      base_path: docs
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.extra
+  - pymdownx.details
+  - pymdownx.superfences

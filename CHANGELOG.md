@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added example workspace containing a docker compose project with frontend backend and database
 - Added tests using [pytest](https://docs.pytest.org/)
+- Added [online documentation](https://builderer.florian-sattler.de) using [MkDocs](https://www.mkdocs.org/) and [Material for MkDocs](https://squidfunk.github.io/mkdocs-material)
 
 ### Changed
 
@@ -27,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added command line interface with config files using [Pydantic](https://docs.pydantic.dev/) and [Pydantic Argparse](https://pydantic-argparse.supimdos.com/)
 - Updated README.md to reflect changes
 - pin requirements and their dependencies using [pip compile](https://github.com/jazzband/pip-tools)
-- Added link to this changelog in [README.md](README.md)
+- Added link to this changelog in [README.md](https://github.com/florian-sattler/builderer/blob/main/README.md)
 - Initial [PyPI release](https://pypi.org/project/builderer/)
 - Improved package metadata
 

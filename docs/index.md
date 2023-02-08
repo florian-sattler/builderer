@@ -1,11 +1,11 @@
-<div align="center">
+<div style="text-align:center">
     <a href="https://builderer.florian-sattler.de">
-        <img src="https://builderer.florian-sattler.de/logo-color.svg" width="25%">
+        <img src="logo-color.svg" width="25%">
     </a>
-    <h1>
+    <h1 style="margin-bottom:0;font-size:3em;">
         builderer
     </h1>
-    <p>
+    <p style="margin-top:0;">
         <em>Container based mono repo builder</em>
     </p>
     <a href="https://pypi.python.org/pypi/builderer">
@@ -23,19 +23,25 @@
     <img src="https://img.shields.io/github/v/tag/florian-sattler/builderer">
 </div>
 
-_builderer_ builds docker based projects both in ci/cd and locally omitting endless configuration and the need to restart ci/cd pipelines to get a running build.
+---
 
-## Help
+## But why?
 
-See [documentation](https://builderer.florian-sattler.de) for help.
+!!! quote
 
-## Installation
+    builder let's you build your stack the __same way__ your build pipeline does so you won't get any suprises!
 
-```bash
-pip install builderer
-```
+As often in life there are many ways to reach a goal.
+_builderer_ is one such way when building repositories containing container based components (i.e. docker images).
 
-## Example
+_builderer_ makes it easy to build images both on any CI/CD plattform as well as your local machine.
+<br>_(Obviously running builder requires python and either docker or podman)_
+
+!!! tip
+
+    builder let's you have only one build config for local and remote builds!
+
+## Quickstart
 
 Create `.builderer.yml` a the root of your project:
 
@@ -48,7 +54,16 @@ steps:
       - backend
 ```
 
-Run the configuration.
+Run the configuration locally to check for potential issues.
+
+```shell
+$ builderer --no-push
+Building image: database
+Building image: frontend
+Building image: backend
+```
+
+Now add builderer to your delivery pipeline and get a running build!
 
 ```shell
 $ builderer
@@ -62,10 +77,6 @@ Pushing image: database
 
 Further configuration can be supplied via command line or in `.builderer.yml`.
 See `builderer --help` and [docs](https://builderer.florian-sattler.de) to learn more.
-
-## Changelog
-
-Interested in what's new? Take a look at the [Changelog](CHANGELOG.md)!
 
 ## License
 
