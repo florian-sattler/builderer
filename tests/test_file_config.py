@@ -3,7 +3,7 @@ import pathlib
 import builderer.config
 
 
-def test_load_minimal(datadir: pathlib.Path):
+def test_load_minimal(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildConfig.load(datadir / "minimal.yml")
 
     assert file_config.dict() == {
@@ -21,7 +21,7 @@ def test_load_minimal(datadir: pathlib.Path):
     }
 
 
-def test_load_example(datadir: pathlib.Path):
+def test_load_example(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildConfig.load(datadir / "example.yml")
 
     assert file_config.dict() == {
@@ -39,7 +39,7 @@ def test_load_example(datadir: pathlib.Path):
     }
 
 
-def test_load_example_workspace(datadir: pathlib.Path):
+def test_load_example_workspace(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildConfig.load(datadir / "example_workspace" / ".builderer.yml")
 
     assert file_config.dict() == {

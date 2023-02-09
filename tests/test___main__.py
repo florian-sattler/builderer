@@ -73,7 +73,9 @@ def test_parse_args_special_action(flag: str, pattern: str, capsys: pytest.Captu
 
 
 @pytest.mark.parametrize("verbose", [True, False])
-def test_main_simulate_example_workspace(datadir: pathlib.Path, capsys: pytest.CaptureFixture, verbose: bool):
+def test_main_simulate_example_workspace(
+    datadir: pathlib.Path, capsys: pytest.CaptureFixture[str], verbose: bool
+) -> None:
     run_config = datadir / "example_workspace" / ".builderer.yml"
     arguments = ["--config", str(run_config), "--simulate"] + (["--verbose"] if verbose else [])
 
