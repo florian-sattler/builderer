@@ -1,8 +1,75 @@
 import pathlib
+import re
+import typing
 
 import pytest
 
 import builderer.__main__
+
+
+@pytest.mark.parametrize(
+    ("input_args", "expected_config", "expected_args"),
+    [
+        (
+            [],
+            ".builderer.yml",
+            {},
+        ),
+        (
+            [
+                "--registry",
+                "reg.examle.com:6789",
+                "--prefix",
+                "user",
+                "--tags",
+                "foo",
+                "bar",
+                "baz",
+                "--no-push",
+                "--cache",
+                "--verbose",
+                "--simulate",
+                "--backend",
+                "podman",
+                "--config",
+                "test.yaml",
+            ],
+            "test.yaml",
+            {
+                "registry": "reg.examle.com:6789",
+                "prefix": "user",
+                "tags": ["foo", "bar", "baz"],
+                "push": False,
+                "cache": True,
+                "verbose": True,
+                "simulate": True,
+                "backend": "podman",
+            },
+        ),
+    ],
+)
+def test_parse_args(input_args: list[str], expected_config: str, expected_args: dict[str, typing.Any]) -> None:
+    actual_config, actual_args = builderer.__main__.parse_args(input_args)
+    assert actual_config == expected_config
+    assert actual_args == expected_args
+
+
+@pytest.mark.parametrize(
+    ("flag", "pattern"),
+    [
+        ("--help", "^usage: builderer.*options"),
+        ("-h", "^usage: builderer.*options"),
+        ("--version", r"^builderer \d+\.\d+\.\d+$"),
+    ],
+)
+def test_parse_args_special_action(flag: str, pattern: str, capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit, match="^0$"):
+        builderer.__main__.parse_args([flag])
+
+    captured = capsys.readouterr()
+
+    assert captured.err == ""
+    assert re.match(pattern, captured.out, re.DOTALL) is not None
 
 
 @pytest.mark.parametrize("verbose", [True, False])

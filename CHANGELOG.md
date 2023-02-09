@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added example workspace containing a docker compose project with frontend backend and database
 - Added tests using [pytest](https://docs.pytest.org/)
 
+### Changed
+
+- Moved from _pydanctic argparse_ to pythons argparse
+
 ### Removed
 
 - Removed `name` from build config

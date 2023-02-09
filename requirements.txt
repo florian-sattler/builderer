@@ -5,8 +5,6 @@
 #    pip-compile setup.cfg
 #
 pydantic==1.10.4
-    # via pydantic-argparse
-pydantic-argparse==0.6.1
     # via builderer (setup.cfg)
 pyyaml==6.0
     # via builderer (setup.cfg)
