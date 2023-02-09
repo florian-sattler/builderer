@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added example workspace containing a docker compose project with frontend backend and database
+- Added tests using [pytest](https://docs.pytest.org/)
 
 ### Removed
 

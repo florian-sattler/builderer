@@ -1,0 +1,13 @@
+parameters:
+  registry: "registry.example.com:12345"
+  prefix: "username"
+  push: false
+  cache: false
+  verbose: false
+  tags: 
+    - a
+    - b
+  simulate: true
+  backend: podman
+
+steps: []
