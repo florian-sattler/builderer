@@ -81,7 +81,6 @@ class PullImages(_Step):
 
 
 class BuildConfig(_Step):
-    name: str
     steps: list[Action | BuildImage | BuildImages | ExtractFromImage | ForwardImage | PullImage | PullImages]
 
     parameters: models.Parameters = pydantic.Field(default_factory=models.Parameters)  # pyright: ignore
