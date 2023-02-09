@@ -1,0 +1,17 @@
+parameters:
+  registry: registry.example.com
+  prefix: foo
+
+steps:
+  - type: pull_images
+    names:
+      - docker.io/python:alpine
+      - docker.io/nginx:alpine
+
+  - type: forward_image
+    name: docker.io/redis:alpine
+
+  - type: build_images
+    directories:
+      - frontend
+      - backend

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.classless.min.css" />
+    <title>Frontend</title>
+  </head>
+
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li><strong>Frontend</strong></li>
+        </ul>
+        <ul>
+          <li><a href="/api/docs" target="_blank" role="button">API-Docs</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <details>
+        <summary>Read Item</summary>
+        <button id="read-btn">Go!</button>
+      </details>
+
+      <details>
+        <summary>Save Item</summary>
+        <input type="text" id="save-value" />
+        <button id="save-btn">Go!</button>
+      </details>
+
+      <details open>
+        <summary>History</summary>
+        <ul id="history"></ul>
+      </details>
+    </main>
+
+    <script>
+      const to_history = async (r, action) => {
+        document.getElementById("history").innerHTML += `<li>${action} [${r.status}]: ${await r.text()}</li>`;
+      };
+      document
+        .getElementById("read-btn")
+        .addEventListener("click", () => fetch("/api/store", { method: "GET" }).then((r) => to_history(r, "Loaded")));
+      document
+        .getElementById("save-btn")
+        .addEventListener("click", () =>
+          fetch(`/api/store?item=${document.getElementById("save-value").value}`, { method: "POST" }).then((r) =>
+            to_history(r, "Saved")
+          )
+        );
+    </script>
+  </body>
+</html>

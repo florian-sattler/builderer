@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  frontend:
+    image: frontend
+    depends_on:
+     - backend
+    ports:
+      - 8000:80
+
+  backend:
+    image: backend
+    container_name: backend
+    depends_on:
+      - database
+
+  database:
+    image: redis:alpine
+    container_name: database
