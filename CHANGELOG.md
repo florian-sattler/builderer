@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added example workspace containing a docker compose project with frontend backend and database
 - Added tests using [pytest](https://docs.pytest.org/)
 - Added [online documentation](https://builderer.florian-sattler.de) using [MkDocs](https://www.mkdocs.org/) and [Material for MkDocs](https://squidfunk.github.io/mkdocs-material)
+- Additional URLs on [PyPI](https://pypi.org/project/builderer/) to documentation, changelog, code and issue tracker
 
 ### Changed
 
