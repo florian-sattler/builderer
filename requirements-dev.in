@@ -1,0 +1,9 @@
+black
+build
+bump2version
+flake8
+markdown_include
+mkdocs-material
+mypy
+pytest
+types-PyYAML

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Development requirements pinned using [pip compile](https://github.com/jazzband/pip-tools)
+
 ### Fixed
 
 - PyPI project urls
