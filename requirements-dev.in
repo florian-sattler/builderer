@@ -7,3 +7,4 @@ mkdocs-material
 mypy
 pytest
 types-PyYAML
+mdx_truly_sane_lists

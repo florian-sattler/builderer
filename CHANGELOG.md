@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - PyPI project urls
+- Fixed broken nested lists with two spaces using [mdx_truly_sane_lists](https://pypi.org/project/mdx-truly-sane-lists/) see [this issue](https://github.com/mkdocs/mkdocs/issues/545)
 
 ## [v0.3.0] - 2023-02-10
 
