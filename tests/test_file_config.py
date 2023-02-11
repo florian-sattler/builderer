@@ -4,7 +4,7 @@ import builderer.config
 
 
 def test_load_minimal(datadir: pathlib.Path) -> None:
-    file_config = builderer.config.BuildConfig.load(datadir / "minimal.yml")
+    file_config = builderer.config.BuildererConfig.load(datadir / "minimal.yml")
 
     assert file_config.dict() == {
         "steps": [],
@@ -22,7 +22,7 @@ def test_load_minimal(datadir: pathlib.Path) -> None:
 
 
 def test_load_example(datadir: pathlib.Path) -> None:
-    file_config = builderer.config.BuildConfig.load(datadir / "example.yml")
+    file_config = builderer.config.BuildererConfig.load(datadir / "example.yml")
 
     assert file_config.dict() == {
         "parameters": {
@@ -40,7 +40,7 @@ def test_load_example(datadir: pathlib.Path) -> None:
 
 
 def test_load_example_workspace(datadir: pathlib.Path) -> None:
-    file_config = builderer.config.BuildConfig.load(datadir / "example_workspace" / ".builderer.yml")
+    file_config = builderer.config.BuildererConfig.load(datadir / "example_workspace" / ".builderer.yml")
 
     assert file_config.dict() == {
         "parameters": {

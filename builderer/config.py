@@ -91,12 +91,12 @@ class Parameters(_BaseModel):
     backend: typing.Literal["docker", "podman"] | None = None
 
 
-class BuildConfig(_BaseModel):
+class BuildererConfig(_BaseModel):
     steps: list[Action | BuildImage | BuildImages | ExtractFromImage | ForwardImage | PullImage | PullImages]
 
     parameters: Parameters = pydantic.Field(default_factory=Parameters)
 
     @staticmethod
-    def load(path: str | pathlib.Path) -> "BuildConfig":
+    def load(path: str | pathlib.Path) -> "BuildererConfig":
         with open(path, "rt") as f:
-            return BuildConfig.parse_obj(yaml.safe_load(f))
+            return BuildererConfig.parse_obj(yaml.safe_load(f))

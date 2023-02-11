@@ -36,6 +36,7 @@ nav:
   - Command Line Interface: cli.md
   - Usage as library: library.md
   - Changelog: changes.md
+  - Editor integration: editor-integration.md
 
 markdown_extensions:
   - tables

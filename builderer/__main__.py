@@ -3,7 +3,7 @@ from typing import Any
 
 from builderer import __version__
 from builderer.builderer import Builderer
-from builderer.config import BuildConfig
+from builderer.config import BuildererConfig
 
 
 def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     config_path, cli_args = parse_args(argv)
 
     try:
-        config = BuildConfig.load(config_path)
+        config = BuildererConfig.load(config_path)
     except FileNotFoundError as e:
         print(e)
         return 1

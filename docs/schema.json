@@ -1,0 +1,307 @@
+{
+  "title": "BuildererConfig",
+  "type": "object",
+  "properties": {
+    "steps": {
+      "title": "Steps",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Action"
+          },
+          {
+            "$ref": "#/definitions/BuildImage"
+          },
+          {
+            "$ref": "#/definitions/BuildImages"
+          },
+          {
+            "$ref": "#/definitions/ExtractFromImage"
+          },
+          {
+            "$ref": "#/definitions/ForwardImage"
+          },
+          {
+            "$ref": "#/definitions/PullImage"
+          },
+          {
+            "$ref": "#/definitions/PullImages"
+          }
+        ]
+      }
+    },
+    "parameters": {
+      "$ref": "#/definitions/Parameters"
+    }
+  },
+  "required": [
+    "steps"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Action": {
+      "title": "Action",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "action"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "commands": {
+          "title": "Commands",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "post": {
+          "title": "Post",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "commands",
+        "post"
+      ],
+      "additionalProperties": false
+    },
+    "BuildImage": {
+      "title": "BuildImage",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "build_image"
+          ],
+          "type": "string"
+        },
+        "directory": {
+          "title": "Directory",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "push": {
+          "title": "Push",
+          "default": true,
+          "type": "boolean"
+        },
+        "qualified": {
+          "title": "Qualified",
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "directory"
+      ],
+      "additionalProperties": false
+    },
+    "BuildImages": {
+      "title": "BuildImages",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "build_images"
+          ],
+          "type": "string"
+        },
+        "directories": {
+          "title": "Directories",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "push": {
+          "title": "Push",
+          "default": true,
+          "type": "boolean"
+        },
+        "qualified": {
+          "title": "Qualified",
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "directories"
+      ],
+      "additionalProperties": false
+    },
+    "ExtractFromImage": {
+      "title": "ExtractFromImage",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "extract_from_image"
+          ],
+          "type": "string"
+        },
+        "image": {
+          "title": "Image",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "dest": {
+          "title": "Dest",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "image",
+        "path",
+        "dest"
+      ],
+      "additionalProperties": false
+    },
+    "ForwardImage": {
+      "title": "ForwardImage",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "forward_image"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "new_name": {
+          "title": "New Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "PullImage": {
+      "title": "PullImage",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "pull_image"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "PullImages": {
+      "title": "PullImages",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "enum": [
+            "pull_images"
+          ],
+          "type": "string"
+        },
+        "names": {
+          "title": "Names",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "names"
+      ],
+      "additionalProperties": false
+    },
+    "Parameters": {
+      "title": "Parameters",
+      "type": "object",
+      "properties": {
+        "registry": {
+          "title": "Registry",
+          "type": "string"
+        },
+        "prefix": {
+          "title": "Prefix",
+          "type": "string"
+        },
+        "push": {
+          "title": "Push",
+          "type": "boolean"
+        },
+        "cache": {
+          "title": "Cache",
+          "type": "boolean"
+        },
+        "verbose": {
+          "title": "Verbose",
+          "type": "boolean"
+        },
+        "tags": {
+          "title": "Tags",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "simulate": {
+          "title": "Simulate",
+          "type": "boolean"
+        },
+        "backend": {
+          "title": "Backend",
+          "enum": [
+            "docker",
+            "podman"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

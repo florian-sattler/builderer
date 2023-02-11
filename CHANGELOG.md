@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Development requirements pinned using [pip compile](https://github.com/jazzband/pip-tools)
+- Added [editor integration](http://builderer.florian-sattler.de/editor-integration/) for `.builderer.yml`
+
+### Changed
+
+- Renamed `BuildConfig` to builderer config for clarity and editor integration.
 
 ### Fixed
 
