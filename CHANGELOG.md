@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Renamed `BuildConfig` to builderer config for clarity and editor integration.
+- Reworked shields in documentation and README.md
 
 ### Fixed
 

@@ -8,19 +8,27 @@
     <p>
         <em>Container based mono repo builder</em>
     </p>
-    <a href="https://pypi.python.org/pypi/builderer">
-        <img src="https://img.shields.io/pypi/v/builderer.svg">
-    </a>
-    <a href="https://pepy.tech/project/builderer">
-        <img src="https://pepy.tech/badge/builderer">
-    </a>
-    <a href="https://github.com/florian-sattler/builderer">
-        <img src="https://img.shields.io/pypi/pyversions/builderer.svg">
-    </a>
-    <a href="https://github.com/florian-sattler/builderer/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/florian-sattler/builderer.svg">
-    </a>
-    <img src="https://img.shields.io/github/v/tag/florian-sattler/builderer">
+    <p> 
+        <a href="https://pypi.python.org/pypi/builderer">
+            <img src="https://img.shields.io/pypi/v/builderer.svg">
+        </a>
+        <a href="https://pepy.tech/project/builderer">
+            <img src="https://pepy.tech/badge/builderer">
+        </a>
+        <a href="https://github.com/florian-sattler/builderer">
+            <img src="https://img.shields.io/pypi/pyversions/builderer.svg">
+        </a>
+        <a href="https://github.com/florian-sattler/builderer/blob/main/LICENSE">
+            <img src="https://img.shields.io/github/license/florian-sattler/builderer.svg">
+        </a>
+        <a href="https://github.com/florian-sattler/builderer/releases">
+            <img src="https://img.shields.io/github/v/release/florian-sattler/builderer?label=github">
+        </a>
+        <a href="https://builderer.florian-sattler.de">
+            <img src="https://img.shields.io/badge/docs-yes-brightgreen">
+        </a>
+        <img src="https://img.shields.io/badge/made%20with-%E2%99%A5%EF%B8%8F-red">
+    </p>
 </div>
 
 _builderer_ builds docker based projects both in ci/cd and locally omitting endless configuration and the need to restart ci/cd pipelines to get a running build.
