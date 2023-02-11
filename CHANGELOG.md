@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Development requirements pinned using [pip compile](https://github.com/jazzband/pip-tools)
 - Added [editor integration](http://builderer.florian-sattler.de/editor-integration/) for `.builderer.yml`
+- Added links for each release showing what changed using github's compare function.
 
 ### Changed
 
@@ -20,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PyPI project urls
 
-## [0.3.0] - 2023-02-10
+## [v0.3.0] - 2023-02-10
 
 ### Added
 
@@ -37,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed `name` from build config
 
-## [0.2.0] - 2023-02-08
+## [v0.2.0] - 2023-02-08
 
 ### Added
 
@@ -52,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `Builderer` object can now be imported directly from the package.
 
-## [0.1.0] - 2023-02-07
+## [v0.1.0] - 2023-02-07
 
 ### Added
 
@@ -62,3 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Builderer-Package with [PEP 518 Metadata](https://peps.python.org/pep-0518/)
 - Changelog
 - Use bump2version
+
+[unreleased]: https://github.com/florian-sattler/builderer/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/florian-sattler/builderer/compare/v0.2.0...v0.3.0
+[v0.2.0]: https://github.com/florian-sattler/builderer/compare/v0.1.0...v0.2.0
+[v0.1.0]: https://github.com/florian-sattler/builderer/releases/tag/v0.1.0
