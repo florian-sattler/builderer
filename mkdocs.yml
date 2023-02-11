@@ -4,27 +4,31 @@ strict: true
 site_url: https://builderer.florian-sattler.de/
 
 theme:
-  name: 'material'
+  name: "material"
   palette:
-  - media: "(prefers-color-scheme: light)"
-    scheme: default
-    primary: deep orange
-    accent: deep orange
-    toggle:
-      icon: material/lightbulb-outline
-      name: "Switch to dark mode"
-  - media: "(prefers-color-scheme: dark)"
-    scheme: slate
-    primary: deep orange
-    accent: deep orange
-    toggle:
-      icon: material/lightbulb
-      name: "Switch to light mode"
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/lightbulb-outline
+        name: "Switch to dark mode"
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/lightbulb
+        name: "Switch to light mode"
   features:
     - content.tabs.link
     - content.code.copy
-  logo: 'logo-white.svg'
-  favicon: 'favicon.png'
+    - navigation.footer
+    - navigation.instant
+    - toc.integrate
+    - navigation.top
+  logo: "logo-white.svg"
+  favicon: "favicon.png"
 
 repo_name: florian-sattler/builderer
 repo_url: https://github.com/florian-sattler/builderer
@@ -49,3 +53,16 @@ markdown_extensions:
   - pymdownx.extra
   - pymdownx.details
   - pymdownx.superfences
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/florian-sattler
+    - icon: fontawesome/brands/python
+      link: https://pypi.python.org/pypi/builderer
+    - icon: fontawesome/brands/xing
+      link: https://www.xing.com/profile/Florian_Sattler12/cv
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/florian-sattler-3b12811b7/
+
+copyright: Copyright &copy; 2023 Florian Sattler

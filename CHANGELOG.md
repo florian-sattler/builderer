@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Development requirements pinned using [pip compile](https://github.com/jazzband/pip-tools)
+- Extended documentation configuration
+  - added navigation to footer
+  - added copyright notice to footer
+  - added social links to footer
+  - instant page loading
+  - moved page table of contents (right) into main navigation (left)
+  - added scroll to top button
 - Added [editor integration](http://builderer.florian-sattler.de/editor-integration/) for `.builderer.yml`
 - Added links for each release showing what changed using github's compare function.
 
