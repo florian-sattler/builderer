@@ -26,6 +26,20 @@ class Builderer:
         simulate: bool = False,
         backend: typing.Literal["docker", "podman"] = "docker",
     ) -> None:
+        """Builderer runs commands inside in two queues. A action queue and a post queue.
+        First the action queue gets handled (FIFO) then the corresponding post actions get called in reversed order (LIFO)
+        Pushing is done as a post steps. This means a build is only pushed if builder of all images was successfull.
+
+        Args:
+            registry (str | None, optional): Registry URL. Defaults to None.
+            prefix (str | None, optional): Registry folder / namespace / user. Defaults to None.
+            push (bool, optional): Whether to allow pushing images. Defaults to True.
+            cache (bool, optional): Allow using cached images. Defaults to False.
+            verbose (bool, optional): Verbose output. Defaults to False.
+            tags (list[str], optional): Tags to use. Defaults to ["latest"].
+            simulate (bool, optional): Prevent issuing commands.. Defaults to False.
+            backend (typing.Literal["docker", "podman"], optional): Overwrite backend to use. Defaults to "docker".
+        """
         self.tags = tags
         self.registry = registry
         self.prefix = prefix
@@ -39,6 +53,15 @@ class Builderer:
         self._post: collections.deque[Action] = collections.deque()
 
     def action(self, name: str, commands: list[list[str]], post: bool) -> None:
+        """A generic action with multiple commands.
+
+        Hint: Use this mechanism if other commands aren't sufficient for your usecase.
+
+        Args:
+            name (str): Name of the action
+            commands (list[list[str]]): List of commands. Each command is a list of strings: the executable followed by arguments.
+            post (bool): whether to add the action to the post queue: default is the regular execution queue.
+        """
         item = Action(name=name, commands=commands)
 
         if post:
@@ -74,6 +97,14 @@ class Builderer:
         push: bool = True,
         qualified: bool = True,
     ) -> None:
+        """Build a docker image and push it to the registry.
+
+        Args:
+            directory (str): directory containing the Dockerfile
+            name (str | None, optional): name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
+            push (bool, optional): Wether to push the image. Defaults to True.
+            qualified (bool, optional): Wehter to add the registry path and prefix to the image name. Defaults to True.
+        """
         if name is None:
             name = os.path.basename(directory)
 
@@ -95,6 +126,13 @@ class Builderer:
         )
 
     def extract_from_image(self, image: str, path: str, *dest: str) -> None:
+        """Copy a file from within a docker image.
+
+        Args:
+            image (str): Name of the image to copy from.
+            path (str): Source path inside the image.
+            dest (str): Destination paths. The file will be copied to all destinations individually.
+        """
         image_name = self._full_image_name(image)
         container_name = str(uuid.uuid4())
 
@@ -109,6 +147,12 @@ class Builderer:
         )
 
     def forward_image(self, name: str, *, new_name: str | None = None) -> None:
+        """Pulls an image from a registry, retags it and pushes it using the new names.
+
+        Args:
+            name (str): image name to pull
+            new_name (str | None, optional): Set a new name for the image. By default the basename of the image without the tag is used. Defaults to None.
+        """
         if new_name is None:
             new_name = os.path.basename(name).split(":")[0]
 
@@ -133,6 +177,11 @@ class Builderer:
         )
 
     def pull_image(self, name: str) -> None:
+        """Pulls an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds)
+
+        Args:
+            name (str): image name to pull.
+        """
         self.action(
             name=f"Pulling image: {name}",
             commands=[[self.backend, "pull", name]],
@@ -140,6 +189,11 @@ class Builderer:
         )
 
     def run(self) -> int:
+        """After adding all steps. This method will start to issue all commands. It stops when done or a command fails.
+
+        Returns:
+            int: return code. On success this will be zero. Otherwise it will be the return code of the failed command.
+        """
         for queue in [self._actions, self._post]:
             for action in queue:
                 print(action.name, flush=True)
