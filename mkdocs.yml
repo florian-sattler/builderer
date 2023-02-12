@@ -66,3 +66,14 @@ extra:
       link: https://www.linkedin.com/in/florian-sattler-3b12811b7/
 
 copyright: Copyright &copy; 2023 Florian Sattler
+
+plugins:
+  - mkdocstrings:
+      enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
+      custom_templates: templates
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: false
+  - search
