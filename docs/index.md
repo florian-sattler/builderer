@@ -84,7 +84,10 @@ Pushing image: database
 ```
 
 Further configuration can be supplied via command line or in `.builderer.yml`.
-See `builderer --help` and [docs](https://builderer.florian-sattler.de) to learn more.
+
+!!! TIP
+
+    See `builderer --help` and [docs](https://builderer.florian-sattler.de) to learn more.
 
 ## License
 
