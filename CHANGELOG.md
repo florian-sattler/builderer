@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - added scroll to top button
 - Added [editor integration](http://builderer.florian-sattler.de/editor-integration/) for `.builderer.yml`
 - Added links for each release showing what changed using github's compare function.
+- Improved config validation and error display
 
 ### Changed
 

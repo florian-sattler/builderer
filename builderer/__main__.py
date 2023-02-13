@@ -1,6 +1,8 @@
 import argparse
 from typing import Any
 
+import pydantic
+
 from builderer import __version__
 from builderer.builderer import Builderer
 from builderer.config import BuildererConfig
@@ -34,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         config = BuildererConfig.load(config_path)
-    except FileNotFoundError as e:
+    except (FileNotFoundError, pydantic.ValidationError) as e:
         print(e)
         return 1
 

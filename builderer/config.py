@@ -96,6 +96,22 @@ class BuildererConfig(_BaseModel):
 
     parameters: Parameters = pydantic.Field(default_factory=Parameters)
 
+    @pydantic.validator("steps", pre=True, each_item=True)
+    def parse_steps_by_type(cls, v: typing.Any) -> typing.Any:
+        if not isinstance(v, dict):
+            return v
+
+        if "type" not in v:
+            raise ValueError("malformed step: 'type' is required!")
+
+        class_name = "".join(x.title() for x in v["type"].split("_"))
+
+        for step_type in cls.__fields__["steps"].type_.__args__:
+            if class_name == step_type.__name__:
+                return step_type.parse_obj(v)
+
+        raise ValueError(f"Unknown step type {v['type']}")
+
     @staticmethod
     def load(path: str | pathlib.Path) -> "BuildererConfig":
         with open(path, "rt") as f:
