@@ -3,6 +3,7 @@ from typing import Any
 
 import pydantic
 
+import builderer._documentation as docs
 from builderer import __version__
 from builderer.builderer import Builderer
 from builderer.config import BuildererConfig
@@ -15,15 +16,15 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
         epilog="This program is intended to run locally and inside ci/cd jobs.",
     )
 
-    parser.add_argument("--registry", type=str, default=None, help="Registry URL [default='']")
-    parser.add_argument("--prefix", type=str, default=None, help="Registry folder / namespace / user [default='']")
-    parser.add_argument("--tags", nargs="+", type=str, default=None, help="Tags to use [default=['latest']]")
-    parser.add_argument("--no-push", action="store_false", dest="push", default=None, help="Prevent pushing images.")
-    parser.add_argument("--cache", action="store_true", default=None, help="Allow using cached images.")
-    parser.add_argument("--verbose", action="store_true", default=None, help="Allow verbose output.")
-    parser.add_argument("--simulate", action="store_true", default=None, help="Prevent issuing commands.")
-    parser.add_argument("--backend", choices=["docker", "podman"], help="Overwrite backend to use [default=docker]")
-    parser.add_argument("--config", type=str, default=".builderer.yml", help="Path to %(prog)s config.")
+    parser.add_argument("--registry", type=str, default=None, help=docs.arg_registry_desc)
+    parser.add_argument("--prefix", type=str, default=None, help=docs.arg_prefix_desc)
+    parser.add_argument("--tags", nargs="+", type=str, default=None, help=docs.arg_tags_desc)
+    parser.add_argument("--no-push", action="store_false", dest="push", default=None, help=docs.arg_cli_config)
+    parser.add_argument("--cache", action="store_true", default=None, help=docs.arg_cache_desc)
+    parser.add_argument("--verbose", action="store_true", default=None, help=docs.arg_verbose_desc)
+    parser.add_argument("--simulate", action="store_true", default=None, help=docs.arg_simulate_desc)
+    parser.add_argument("--backend", choices=["docker", "podman"], help=docs.arg_backend_desc)
+    parser.add_argument("--config", type=str, default=".builderer.yml", help=docs.arg_cli_config)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     arguments = parser.parse_args(argv)
