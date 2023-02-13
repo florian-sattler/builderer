@@ -4,6 +4,7 @@
   "properties": {
     "steps": {
       "title": "Steps",
+      "description": "List of steps to execute.",
       "type": "array",
       "items": {
         "anyOf": [
@@ -32,7 +33,13 @@
       }
     },
     "parameters": {
-      "$ref": "#/definitions/Parameters"
+      "title": "Parameters",
+      "description": "Overwrite default parameters. Values set here will be overwritten by command line arguments.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Parameters"
+        }
+      ]
     }
   },
   "required": [
@@ -46,6 +53,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "action"
           ],
@@ -53,10 +61,12 @@
         },
         "name": {
           "title": "Name",
+          "description": "Name printed before running the action",
           "type": "string"
         },
         "commands": {
           "title": "Commands",
+          "description": "List of commands. Each command is a list of strings: the executable followed by arguments.",
           "type": "array",
           "items": {
             "type": "array",
@@ -67,6 +77,7 @@
         },
         "post": {
           "title": "Post",
+          "description": "Whether to add the action to the post queue",
           "type": "boolean"
         }
       },
@@ -84,6 +95,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "build_image"
           ],
@@ -91,19 +103,23 @@
         },
         "directory": {
           "title": "Directory",
+          "description": "Directory containing the Dockerfile. This is also used as the build context.",
           "type": "string"
         },
         "name": {
           "title": "Name",
+          "description": "Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.",
           "type": "string"
         },
         "push": {
           "title": "Push",
+          "description": "Whether to push the image. Defaults to True.",
           "default": true,
           "type": "boolean"
         },
         "qualified": {
           "title": "Qualified",
+          "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
           "default": true,
           "type": "boolean"
         }
@@ -120,6 +136,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "build_images"
           ],
@@ -127,6 +144,7 @@
         },
         "directories": {
           "title": "Directories",
+          "description": "Directories containing each containing Dockerfile.",
           "type": "array",
           "items": {
             "type": "string"
@@ -134,11 +152,13 @@
         },
         "push": {
           "title": "Push",
+          "description": "Whether to push the image. Defaults to True.",
           "default": true,
           "type": "boolean"
         },
         "qualified": {
           "title": "Qualified",
+          "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
           "default": true,
           "type": "boolean"
         }
@@ -155,6 +175,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "extract_from_image"
           ],
@@ -162,14 +183,17 @@
         },
         "image": {
           "title": "Image",
+          "description": "Name of the image to copy from.",
           "type": "string"
         },
         "path": {
           "title": "Path",
+          "description": "Source path inside the image.",
           "type": "string"
         },
         "dest": {
           "title": "Dest",
+          "description": "Destination paths. The file will be copied to all destinations individually.",
           "type": "array",
           "items": {
             "type": "string"
@@ -190,6 +214,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "forward_image"
           ],
@@ -197,10 +222,12 @@
         },
         "name": {
           "title": "Name",
+          "description": "Image name to forward.",
           "type": "string"
         },
         "new_name": {
           "title": "New Name",
+          "description": "Set a new name for the image. By default the basename of the pulled image without the tag is used.",
           "type": "string"
         }
       },
@@ -216,6 +243,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "pull_image"
           ],
@@ -223,6 +251,7 @@
         },
         "name": {
           "title": "Name",
+          "description": "Image name to pull.",
           "type": "string"
         }
       },
@@ -238,6 +267,7 @@
       "properties": {
         "type": {
           "title": "Type",
+          "description": "Type of the step",
           "enum": [
             "pull_images"
           ],
@@ -245,6 +275,7 @@
         },
         "names": {
           "title": "Names",
+          "description": "Image names to pull.",
           "type": "array",
           "items": {
             "type": "string"
@@ -262,38 +293,46 @@
       "type": "object",
       "properties": {
         "registry": {
-          "title": "Registry",
+          "title": "Registry URL",
+          "description": "Set the registry url. You may include a port using the colon notation (example.com:3000/). This is needed when using a non standard port. Unset by default.",
           "type": "string"
         },
         "prefix": {
-          "title": "Prefix",
+          "title": "Registry directory",
+          "description": "Set the directory for all images. This is the image component between registry url and image name. For example on docker hub this is used for the username. Unset by default.",
           "type": "string"
         },
         "push": {
-          "title": "Push",
+          "title": "Allow pushing images",
+          "description": "Whether to allow pushing images.",
           "type": "boolean"
         },
         "cache": {
-          "title": "Cache",
+          "title": "Allow caching images",
+          "description": "Whether to allow using cached images. This is especially usefull for local builds.",
           "type": "boolean"
         },
         "verbose": {
-          "title": "Verbose",
+          "title": "Verbose output",
+          "description": "Show issued commands and their live output.",
           "type": "boolean"
         },
         "tags": {
-          "title": "Tags",
+          "title": "Tags to use",
+          "description": "One or multiple tags to use for each image. Default to ['latest']",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "simulate": {
-          "title": "Simulate",
+          "title": "Simulate execution",
+          "description": "Prevent issuing any commands just do the printing.",
           "type": "boolean"
         },
         "backend": {
-          "title": "Backend",
+          "title": "Build Backend",
+          "description": "Overwrite the backend used to build, tag and pull images. Defaults to 'docker'",
           "enum": [
             "docker",
             "podman"

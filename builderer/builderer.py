@@ -37,7 +37,7 @@ class Builderer:
             cache (bool, optional): Allow using cached images. Defaults to False.
             verbose (bool, optional): Verbose output. Defaults to False.
             tags (list[str], optional): Tags to use. Defaults to ["latest"].
-            simulate (bool, optional): Prevent issuing commands.. Defaults to False.
+            simulate (bool, optional): Prevent issuing commands. Defaults to False.
             backend (typing.Literal["docker", "podman"], optional): Overwrite backend to use. Defaults to "docker".
         """
         self.tags = tags
@@ -60,7 +60,7 @@ class Builderer:
         Args:
             name (str): Name of the action
             commands (list[list[str]]): List of commands. Each command is a list of strings: the executable followed by arguments.
-            post (bool): whether to add the action to the post queue: default is the regular execution queue.
+            post (bool): Whether to add the action to the post queue.
         """
         item = Action(name=name, commands=commands)
 
@@ -100,10 +100,10 @@ class Builderer:
         """Build a docker image and push it to the registry.
 
         Args:
-            directory (str): directory containing the Dockerfile
-            name (str | None, optional): name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
-            push (bool, optional): Wether to push the image. Defaults to True.
-            qualified (bool, optional): Wehter to add the registry path and prefix to the image name. Defaults to True.
+            directory (str): Directory containing the Dockerfile. This is also used as the build context.
+            name (str | None, optional): Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
+            push (bool, optional): Whether to push the image. Defaults to True.
+            qualified (bool, optional): Whether to add the registry path and prefix to the image name. Defaults to True.
         """
         if name is None:
             name = os.path.basename(directory)
@@ -151,7 +151,7 @@ class Builderer:
 
         Args:
             name (str): image name to pull
-            new_name (str | None, optional): Set a new name for the image. By default the basename of the image without the tag is used. Defaults to None.
+            new_name (str | None, optional): Set a new name for the image. By default the basename of the pulled image without the tag is used. Defaults to None.
         """
         if new_name is None:
             new_name = os.path.basename(name).split(":")[0]

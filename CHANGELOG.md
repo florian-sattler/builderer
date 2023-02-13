@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved config validation and error display
 - Added docstrings in `builderer.builderer.Builderer`
 - Added [mkdocstrings](https://github.com/mkdocstrings/mkdocstrings) to generated references.
+- Added Documentation for json / yaml schema
 - Extended documentation:
   - Usage as library
 
