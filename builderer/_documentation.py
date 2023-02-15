@@ -33,6 +33,7 @@ step_action_post = "Whether to add the action to the post queue"
 
 step_build_directory = "Directory containing the Dockerfile. This is also used as the build context."
 step_build_directories = "Directories containing each containing Dockerfile."
+step_build_dockerfile = "Path to Dockerfile. Name of the resulting image. Defaults to <directory>/Dockerfile."
 step_build_name = "Name of the resulting image. Defaults to the name of the Dockerfiles parent directory."
 step_build_push = "Whether to push the image. Defaults to True."
 step_build_qualified = "Whether to add the registry path and prefix to the image name. Defaults to True."

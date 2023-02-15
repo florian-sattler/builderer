@@ -26,6 +26,7 @@ class Action(_BaseModel):
 class BuildImage(_BaseModel):
     type: typing.Literal["build_image"] = pydantic.Field(description=docs.step_type)
     directory: str = pydantic.Field(description=docs.step_build_directory)
+    dockerfile: str | None = pydantic.Field(default=None, description=docs.step_build_dockerfile)
     name: str | None = pydantic.Field(default=None, description=docs.step_build_name)
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)

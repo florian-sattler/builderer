@@ -93,6 +93,7 @@ class Builderer:
         self,
         directory: str,
         *,
+        dockerfile: str | None = None,
         name: str | None = None,
         push: bool = True,
         qualified: bool = True,
@@ -100,11 +101,15 @@ class Builderer:
         """Build a docker image and push it to the registry.
 
         Args:
-            directory (str): Directory containing the Dockerfile. This is also used as the build context.
+            directory (str): Directory containing the build context.
+            dockerfile (str | None, optional): Path to Dockerfile. Name of the resulting image. Defaults to <directory>/Dockerfile.
             name (str | None, optional): Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
             push (bool, optional): Whether to push the image. Defaults to True.
             qualified (bool, optional): Whether to add the registry path and prefix to the image name. Defaults to True.
         """
+        if dockerfile is None:
+            dockerfile = os.path.join(directory, "Dockerfile")
+
         if name is None:
             name = os.path.basename(directory)
 
@@ -112,7 +117,7 @@ class Builderer:
 
         self.action(
             name=f"Building image: {name}",
-            commands=[[*self._build_cmd(image_name), "-f", posixpath.join(directory, "Dockerfile"), directory]],
+            commands=[[*self._build_cmd(image_name), "-f", dockerfile, directory]],
             post=False,
         )
 
