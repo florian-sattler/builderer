@@ -19,7 +19,7 @@
             <img src="https://img.shields.io/pypi/pyversions/builderer.svg">
         </a>
         <a href="https://github.com/florian-sattler/builderer/blob/main/LICENSE">
-            <img src="https://img.shields.io/github/license/florian-sattler/builderer.svg">
+            <img alt="PyPI - License" src="https://img.shields.io/pypi/l/builderer">
         </a>
         <a href="https://github.com/florian-sattler/builderer/releases">
             <img src="https://img.shields.io/github/v/release/florian-sattler/builderer?label=github">
