@@ -19,17 +19,27 @@ file configuration which in turn takes precedence over default values
 
 options:
   -h, --help            show this help message and exit
-  --registry REGISTRY   Registry URL [default='']
-  --prefix PREFIX       Registry folder / namespace / user [default='']
+  --registry REGISTRY   Set the registry url. You may include a port using the
+                        colon notation (example.com:3000/). This is needed
+                        when using a non standard port. Unset by default.
+  --prefix PREFIX       Set the directory for all images. This is the image
+                        component between registry url and image name. For
+                        example on docker hub this is used for the username.
+                        Unset by default.
   --tags TAGS [TAGS ...]
-                        Tags to use [default=['latest']]
-  --no-push             Prevent pushing images.
-  --cache               Allow using cached images.
-  --verbose             Allow verbose output.
-  --simulate            Prevent issuing commands.
+                        One or multiple tags to use for each image. Default to
+                        ['latest']
+  --no-push             Path to builderer yaml configuration file. Defaults to
+                        '.builderer.yml'
+  --cache               Whether to allow using cached images. This is
+                        especially usefull for local builds.
+  --verbose             Show issued commands and their live output.
+  --simulate            Prevent issuing any commands just do the printing.
   --backend {docker,podman}
-                        Overwrite backend to use [default=docker]
-  --config CONFIG       Path to builderer config.
+                        Overwrite the backend used to build, tag and pull
+                        images. Defaults to 'docker'
+  --config CONFIG       Path to builderer yaml configuration file. Defaults to
+                        '.builderer.yml'
   --version             show program's version number and exit
 
 This program is intended to run locally and inside ci/cd jobs.

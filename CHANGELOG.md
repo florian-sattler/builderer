@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Option to specify which Dockerfile to use for `build_image` and `BuildImage`.
 
+### Fixed
+
+- Up to date CLI docs
+
 ## [v0.4.0] - 2023-02-13
 
 ### Added
