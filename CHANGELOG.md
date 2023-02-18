@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Option to specify which Dockerfile to use for `build_image` and `BuildImage`.
 - Added usage documentation.
+- Publish builderer to [PyPI](https://pypi.org/project/builderer/) via [github actions](https://github.com/marketplace/actions/pypi-publish).
 
 ### Fixed
 
