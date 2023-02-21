@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configuation for [black](https://black.readthedocs.io/en/stable/) and [flake8](https://flake8.pycqa.org/en/latest/).
 
+### Fixed
+
+- `dockerfile` argument was not honored when specified in file config.
+
 ## [v0.4.1] - 2023-02-18
 
 ### Added

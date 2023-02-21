@@ -32,7 +32,13 @@ class BuildImage(_BaseModel):
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
-        builderer.build_image(self.directory, name=self.name, push=self.push, qualified=self.qualified)
+        builderer.build_image(
+            directory=self.directory,
+            dockerfile=self.dockerfile,
+            name=self.name,
+            push=self.push,
+            qualified=self.qualified,
+        )
 
 
 class BuildImages(_BaseModel):
