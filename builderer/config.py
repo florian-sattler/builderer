@@ -20,7 +20,7 @@ class Action(_BaseModel):
     post: bool = pydantic.Field(description=docs.step_action_post)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
-        builderer.action(self.name, self.commands, self.post)
+        builderer.action(name=self.name, commands=self.commands, post=self.post)
 
 
 class BuildImage(_BaseModel):
@@ -49,7 +49,7 @@ class BuildImages(_BaseModel):
 
     def add_to(self, builderer: builderer.Builderer) -> None:
         for directory in self.directories:
-            builderer.build_image(directory, push=self.push, qualified=self.qualified)
+            builderer.build_image(directory=directory, push=self.push, qualified=self.qualified)
 
 
 class ExtractFromImage(_BaseModel):
@@ -68,7 +68,7 @@ class ForwardImage(_BaseModel):
     new_name: str | None = pydantic.Field(default=None, description=docs.step_forward_new_name)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
-        builderer.forward_image(self.name, new_name=self.new_name)
+        builderer.forward_image(name=self.name, new_name=self.new_name)
 
 
 class PullImage(_BaseModel):
@@ -76,7 +76,7 @@ class PullImage(_BaseModel):
     name: str = pydantic.Field(description=docs.step_pull_name)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
-        builderer.pull_image(self.name)
+        builderer.pull_image(name=self.name)
 
 
 class PullImages(_BaseModel):
@@ -85,7 +85,7 @@ class PullImages(_BaseModel):
 
     def add_to(self, builderer: builderer.Builderer) -> None:
         for name in self.names:
-            builderer.pull_image(name)
+            builderer.pull_image(name=name)
 
 
 class Parameters(_BaseModel):
