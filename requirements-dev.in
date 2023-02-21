@@ -3,10 +3,12 @@ build
 bump2version
 flake8
 markdown_include
-mkdocs-material
-mypy
-pytest
-types-PyYAML
 mdx_truly_sane_lists
+mkdocs-material
 mkdocstrings
 mkdocstrings-python
+mypy
+pytest
+pytest-cov
+pytest-mock
+types-PyYAML

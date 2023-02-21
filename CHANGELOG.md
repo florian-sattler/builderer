@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added publishing documentation.
+- Added missing tests to push coverage to 100%. New code will need to be tested from now on.
 
 ### Changed
 

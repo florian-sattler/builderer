@@ -24,7 +24,7 @@ This document describes the process of publishing a new version of `builderer`.
    black --check builderer tests
    flake8 builderer tests
    mypy builderer tests
-   pytest tests/
+   pytest tests/ --cov builderer
    ```
 
 1. Update CHANGELOG.md
