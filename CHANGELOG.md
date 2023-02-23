@@ -11,11 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added publishing documentation.
 - Added missing tests to push coverage to 100%. New code will need to be tested from now on.
+- Require at least python 3.10
 
 ### Changed
 
 - Configuation for [black](https://black.readthedocs.io/en/stable/) and [flake8](https://flake8.pycqa.org/en/latest/).
 - Call `Builderer` methods using keyword arguments from file config when ever possible.
+
+### Removed
+
+- Deleted Python 3.9 package classifier.
 
 ### Fixed
 
