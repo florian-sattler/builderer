@@ -31,4 +31,4 @@ jobs:
           git config --global user.email "florian-sattler@users.noreply.github.com"
 
       - name: Update Docs
-        run: mkdocs gh-deploy
+        run: mkdocs gh-deploy --force
