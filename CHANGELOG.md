@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configuation for [black](https://black.readthedocs.io/en/stable/) and [flake8](https://flake8.pycqa.org/en/latest/).
 - Call `Builderer` methods using keyword arguments from file config when ever possible.
+- Updated dependencies and merged into single `requirements.txt`
 
 ### Removed
 

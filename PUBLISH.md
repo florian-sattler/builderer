@@ -8,7 +8,7 @@ This document describes the process of publishing a new version of `builderer`.
    ```
    python3 -m venv venv
    source venv/bin/activate
-   pip install -r requirements.txt -r requirements-dev.txt
+   pip install -r requirements.txt
    ```
 
 1. Run the following command to update the schema:

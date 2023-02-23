@@ -8,6 +8,7 @@ mkdocs-material
 mkdocstrings
 mkdocstrings-python
 mypy
+pip-tools
 pytest
 pytest-cov
 pytest-mock
