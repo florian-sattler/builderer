@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require at least python 3.10
 - Linting for PRs using [github actions](https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python)
 - Automatically update documentation via gh actions.
+- Extended Documentation
 
 ### Changed
 

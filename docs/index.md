@@ -35,25 +35,27 @@
 
 ## But why?
 
-!!! quote
+_builderer_ let's you build your container stack the **same way** your build pipeline does so you won't get any suprises!
 
-    builder let's you build your stack the __same way__ your build pipeline does so you won't get any suprises!
+!!! quote "Quote by the author"
 
-As often in life there are many ways to reach a goal.
-_builderer_ is one such way when building repositories containing container based components (i.e. docker images).
+    Do you need more than a builder? Try _builderer_!
 
-_builderer_ makes it easy to build images both on any CI/CD plattform as well as your local machine.
+_builderer_ makes it easy to build images both on CI/CD plattforms as well as your local machine using the same configuation and build command.
 <br>_(Obviously running builder requires python and either docker or podman)_
 
 !!! tip
 
-    builder let's you have only one build config for local and remote builds!
+    __builderer__ let's you have only one build config for local and remote builds! Use the [cli](cli.md) for tweaking different environments.
 
 ## Quickstart
 
 Create `.builderer.yml` a the root of your project:
 
 ```yaml
+parameters:
+  registry: registry.example.com
+
 steps:
   - type: build_images
     directories:
@@ -83,11 +85,11 @@ Pushing image: frontend
 Pushing image: database
 ```
 
-Further configuration can be supplied via command line or in `.builderer.yml`.
+Further configuration can be supplied via [command line](cli.md) or in [`.builderer.yml`](usage.md).
 
 !!! TIP
 
-    See `builderer --help` and [docs](https://builderer.florian-sattler.de) to learn more.
+    Take a look at `builderer --help` to learn more or follow this documentation.
 
 ## License
 

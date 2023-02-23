@@ -1,3 +1,5 @@
+"""Builderers file config is a thin wrapper around this library."""
+
 import collections
 import dataclasses
 import os
@@ -14,6 +16,8 @@ class Action:
 
 
 class Builderer:
+    """The Builderer class is used to collect build tasks and issue them afterwards."""
+
     def __init__(
         self,
         *,

@@ -75,5 +75,6 @@ plugins:
       handlers:
         python:
           options:
+            heading_level: 3
             show_source: false
   - search
