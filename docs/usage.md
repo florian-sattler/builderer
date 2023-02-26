@@ -230,7 +230,7 @@ Each step may be one of
 | push     | boolean              | No       | Whether to allow pushing images.                                                                                                                            |
 | cache    | boolean              | No       | Whether to allow using cached images. This is especially usefull for local builds.                                                                          |
 | verbose  | boolean              | No       | Show issued commands and their live output.                                                                                                                 |
-| tags     | array of string      | No       | One or multiple tags to use for each image. Default to ['latest']                                                                                           |
+| tags     | array of string      | No       | One or multiple tags to use for each image. Defaults to ['latest']                                                                                          |
 | simulate | boolean              | No       | Prevent issuing any commands just do the printing.                                                                                                          |
 | backend  | "docker" or "podman" | No       | Overwrite the backend used to build, tag and pull images. Defaults to 'docker'                                                                              |
 
