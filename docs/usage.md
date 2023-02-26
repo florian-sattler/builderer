@@ -1,12 +1,12 @@
 # Usage
 
-This document shows how to used a `.builderer.yml` file to configure your build.
+This document shows how to use a `.builderer.yml` file to configure your build.
 
 Using the `builderer` python library is documented [here](library.md).
 
 !!! Note
 
-    builderer works great on projects containing multiple folder which need to be build, nested below a common root directory.
+    builderer works great on projects containing multiple folder which need to be build, each nested below a common root directory.
 
     ``` { .text .no-copy }
     example_workspace
@@ -230,7 +230,7 @@ Each step may be one of
 | push     | boolean              | No       | Whether to allow pushing images.                                                                                                                            |
 | cache    | boolean              | No       | Whether to allow using cached images. This is especially usefull for local builds.                                                                          |
 | verbose  | boolean              | No       | Show issued commands and their live output.                                                                                                                 |
-| tags     | array of string      | No       | One or multiple tags to use for each image. Default to ['latest']                                                                                           |
+| tags     | array of string      | No       | One or multiple tags to use for each image. Defaults to ['latest']                                                                                          |
 | simulate | boolean              | No       | Prevent issuing any commands just do the printing.                                                                                                          |
 | backend  | "docker" or "podman" | No       | Overwrite the backend used to build, tag and pull images. Defaults to 'docker'                                                                              |
 

@@ -348,7 +348,7 @@
         },
         "tags": {
           "title": "Tags to use",
-          "description": "One or multiple tags to use for each image. Default to ['latest']",
+          "description": "One or multiple tags to use for each image. Defaults to ['latest']",
           "type": "array",
           "items": {
             "type": "string"

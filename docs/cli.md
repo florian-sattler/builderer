@@ -27,7 +27,7 @@ options:
                         example on docker hub this is used for the username.
                         Unset by default.
   --tags TAGS [TAGS ...]
-                        One or multiple tags to use for each image. Default to
+                        One or multiple tags to use for each image. Defaults to
                         ['latest']
   --no-push             Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
