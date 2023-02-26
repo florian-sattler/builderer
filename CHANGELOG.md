@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Allow specifying additional tags when building or forwarding an image on a per step basis.
+
+### Fixed
+
+- Documentation Typos
+
 ## [v1.0.0] - 2023-02-23
 
 ### Added

@@ -30,6 +30,7 @@ class BuildImage(_BaseModel):
     name: str | None = pydantic.Field(default=None, description=docs.step_build_name)
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
+    extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
         builderer.build_image(
@@ -38,6 +39,7 @@ class BuildImage(_BaseModel):
             name=self.name,
             push=self.push,
             qualified=self.qualified,
+            extra_tags=self.extra_tags,
         )
 
 
@@ -46,10 +48,16 @@ class BuildImages(_BaseModel):
     directories: list[str] = pydantic.Field(description=docs.step_build_directories)
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
+    extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
         for directory in self.directories:
-            builderer.build_image(directory=directory, push=self.push, qualified=self.qualified)
+            builderer.build_image(
+                directory=directory,
+                push=self.push,
+                qualified=self.qualified,
+                extra_tags=self.extra_tags,
+            )
 
 
 class ExtractFromImage(_BaseModel):
@@ -66,9 +74,14 @@ class ForwardImage(_BaseModel):
     type: typing.Literal["forward_image"] = pydantic.Field(description=docs.step_type)
     name: str = pydantic.Field(description=docs.step_forward_name)
     new_name: str | None = pydantic.Field(default=None, description=docs.step_forward_new_name)
+    extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
 
     def add_to(self, builderer: builderer.Builderer) -> None:
-        builderer.forward_image(name=self.name, new_name=self.new_name)
+        builderer.forward_image(
+            name=self.name,
+            new_name=self.new_name,
+            extra_tags=self.extra_tags,
+        )
 
 
 class PullImage(_BaseModel):

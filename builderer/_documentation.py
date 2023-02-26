@@ -37,6 +37,7 @@ step_build_dockerfile = "Path to Dockerfile. Name of the resulting image. Defaul
 step_build_name = "Name of the resulting image. Defaults to the name of the Dockerfiles parent directory."
 step_build_push = "Whether to push the image. Defaults to True."
 step_build_qualified = "Whether to add the registry path and prefix to the image name. Defaults to True."
+step_build_extra_tags = "Additional tags to use in this step. Defaults to None."
 
 step_extract_image = "Name of the image to copy from."
 step_extract_path = "Source path inside the image."
@@ -46,6 +47,7 @@ step_forward_name = "Image name to forward."
 step_forward_new_name = (
     "Set a new name for the image. By default the basename of the pulled image without the tag is used."
 )
+step_forward_extra_tags = "Additional tags to use in this step. Defaults to None."
 
 step_pull_name = "Image name to pull."
 step_pull_names = "Image names to pull."
