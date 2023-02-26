@@ -55,7 +55,13 @@ def test_load_example_workspace(datadir: pathlib.Path) -> None:
         },
         "steps": [
             {"type": "pull_images", "names": ["docker.io/python:alpine", "docker.io/nginx:alpine"]},
-            {"type": "forward_image", "name": "docker.io/redis:alpine", "new_name": None},
-            {"type": "build_images", "directories": ["frontend", "backend"], "push": True, "qualified": True},
+            {"type": "forward_image", "name": "docker.io/redis:alpine", "new_name": None, "extra_tags": None},
+            {
+                "type": "build_images",
+                "directories": ["frontend", "backend"],
+                "push": True,
+                "qualified": True,
+                "extra_tags": None,
+            },
         ],
     }

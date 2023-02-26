@@ -57,6 +57,52 @@ def test_build_image(
     ]
 
 
+@pytest.mark.parametrize("push", [True, False])
+def test_build_image_complex(sim_builderer: Builderer, capsys: pytest.CaptureFixture[str], push: bool) -> None:
+    sim_builderer.push = push
+    sim_builderer.tags = ["tag1", "3.14", "v3-alpine"]
+    sim_builderer.registry = "some-reg.server.org:9001"
+    sim_builderer.prefix = "my-prefix"
+    sim_builderer.build_image(
+        "myfrontend",
+        dockerfile="path/to/docker-file",
+        name="alternative-name",
+        push=push,
+        qualified=True,
+        extra_tags=["extra-1", "more"],
+    )
+    ret = sim_builderer.run()
+    captured = capsys.readouterr()
+
+    push_output = (
+        [
+            "Pushing image: alternative-name",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/alternative-name:tag1']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/alternative-name:3.14']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/alternative-name:v3-alpine']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/alternative-name:extra-1']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/alternative-name:more']",
+        ]
+        if push
+        else []
+    )
+
+    assert ret == 0
+    assert captured.err == ""
+    assert captured.out.split("\n") == [
+        "Building image: alternative-name",
+        "['docker', 'build', "
+        "'-t', 'some-reg.server.org:9001/my-prefix/alternative-name:tag1', "
+        "'-t', 'some-reg.server.org:9001/my-prefix/alternative-name:3.14', "
+        "'-t', 'some-reg.server.org:9001/my-prefix/alternative-name:v3-alpine', "
+        "'-t', 'some-reg.server.org:9001/my-prefix/alternative-name:extra-1', "
+        "'-t', 'some-reg.server.org:9001/my-prefix/alternative-name:more', "
+        "'--no-cache', '-f', 'path/to/docker-file', 'myfrontend']",
+        *push_output,
+        "",
+    ]
+
+
 def test_extract_from_image(
     sim_builderer: Builderer, capsys: pytest.CaptureFixture[str], mocker: MockerFixture
 ) -> None:
@@ -112,7 +158,11 @@ def test_forward_image_complex(sim_builderer: Builderer, capsys: pytest.CaptureF
     sim_builderer.tags = ["tag1", "3.14", "v3-alpine"]
     sim_builderer.registry = "some-reg.server.org:9001"
     sim_builderer.prefix = "my-prefix"
-    sim_builderer.forward_image("registry.example.com:3333/bar/remote-image:42", new_name="new-image-name")
+    sim_builderer.forward_image(
+        "registry.example.com:3333/bar/remote-image:42",
+        new_name="new-image-name",
+        extra_tags=["extra-1", "more"],
+    )
     ret = sim_builderer.run()
     captured = capsys.readouterr()
 
@@ -122,6 +172,8 @@ def test_forward_image_complex(sim_builderer: Builderer, capsys: pytest.CaptureF
             "['docker', 'push', 'some-reg.server.org:9001/my-prefix/new-image-name:tag1']",
             "['docker', 'push', 'some-reg.server.org:9001/my-prefix/new-image-name:3.14']",
             "['docker', 'push', 'some-reg.server.org:9001/my-prefix/new-image-name:v3-alpine']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/new-image-name:extra-1']",
+            "['docker', 'push', 'some-reg.server.org:9001/my-prefix/new-image-name:more']",
         ]
         if push
         else []
@@ -134,6 +186,8 @@ def test_forward_image_complex(sim_builderer: Builderer, capsys: pytest.CaptureF
         "['docker', 'tag', 'registry.example.com:3333/bar/remote-image:42', 'some-reg.server.org:9001/my-prefix/new-image-name:tag1']",
         "['docker', 'tag', 'registry.example.com:3333/bar/remote-image:42', 'some-reg.server.org:9001/my-prefix/new-image-name:3.14']",
         "['docker', 'tag', 'registry.example.com:3333/bar/remote-image:42', 'some-reg.server.org:9001/my-prefix/new-image-name:v3-alpine']",
+        "['docker', 'tag', 'registry.example.com:3333/bar/remote-image:42', 'some-reg.server.org:9001/my-prefix/new-image-name:extra-1']",
+        "['docker', 'tag', 'registry.example.com:3333/bar/remote-image:42', 'some-reg.server.org:9001/my-prefix/new-image-name:more']",
         *push_output,
         "",
     ]

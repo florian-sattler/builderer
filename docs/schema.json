@@ -127,6 +127,14 @@
           "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
           "default": true,
           "type": "boolean"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -166,6 +174,14 @@
           "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
           "default": true,
           "type": "boolean"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -234,6 +250,14 @@
           "title": "New Name",
           "description": "Set a new name for the image. By default the basename of the pulled image without the tag is used.",
           "type": "string"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [

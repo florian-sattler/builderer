@@ -76,8 +76,8 @@ class Builderer:
     def _full_image_name(self, name: str) -> str:
         return posixpath.join(self.registry or "", self.prefix or "", name)
 
-    def _build_cmd(self, full_name: str) -> list[str]:
-        tags = [i for tag in self.tags for i in ["-t", f"{full_name}:{tag}"]]
+    def _build_cmd(self, full_name: str, extra_tags: list[str]) -> list[str]:
+        tags = [i for tag in (self.tags + extra_tags) for i in ["-t", f"{full_name}:{tag}"]]
         cache = ["--no-cache"] if not self.cache else []
 
         return [self.backend, "build", *tags, *cache]
@@ -101,6 +101,7 @@ class Builderer:
         name: str | None = None,
         push: bool = True,
         qualified: bool = True,
+        extra_tags: list[str] | None = None,
     ) -> None:
         """Build a docker image and push it to the registry.
 
@@ -110,6 +111,7 @@ class Builderer:
             name (str | None, optional): Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
             push (bool, optional): Whether to push the image. Defaults to True.
             qualified (bool, optional): Whether to add the registry path and prefix to the image name. Defaults to True.
+            extra_tags: additional tags to use for this image. Defaults to None.
         """
         if dockerfile is None:
             dockerfile = os.path.join(directory, "Dockerfile")
@@ -117,11 +119,14 @@ class Builderer:
         if name is None:
             name = os.path.basename(directory)
 
+        if extra_tags is None:
+            extra_tags = []
+
         image_name = self._full_image_name(name) if qualified else name
 
         self.action(
             name=f"Building image: {name}",
-            commands=[[*self._build_cmd(image_name), "-f", dockerfile, directory]],
+            commands=[[*self._build_cmd(image_name, extra_tags), "-f", dockerfile, directory]],
             post=False,
         )
 
@@ -130,7 +135,7 @@ class Builderer:
 
         self.action(
             name=f"Pushing image: {name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags],
+            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
             post=True,
         )
 
@@ -155,15 +160,19 @@ class Builderer:
             post=False,
         )
 
-    def forward_image(self, name: str, *, new_name: str | None = None) -> None:
+    def forward_image(self, name: str, *, new_name: str | None = None, extra_tags: list[str] | None = None) -> None:
         """Pulls an image from a registry, retags it and pushes it using the new names.
 
         Args:
             name (str): image name to pull
             new_name (str | None, optional): Set a new name for the image. By default the basename of the pulled image without the tag is used. Defaults to None.
+            extra_tags: additional tags to use for this image. Defaults to None.
         """
         if new_name is None:
             new_name = os.path.basename(name).split(":")[0]
+
+        if extra_tags is None:
+            extra_tags = []
 
         image_name = self._full_image_name(new_name)
 
@@ -171,7 +180,7 @@ class Builderer:
             name=f"Forwarding image: {name} -> {new_name}",
             commands=[
                 [self.backend, "pull", name],
-                *[[self.backend, "tag", name, f"{image_name}:{tag}"] for tag in self.tags],
+                *[[self.backend, "tag", name, f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
             ],
             post=False,
         )
@@ -181,7 +190,7 @@ class Builderer:
 
         self.action(
             name=f"Pushing image: {new_name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags],
+            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
             post=True,
         )
 

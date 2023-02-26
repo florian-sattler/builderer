@@ -51,6 +51,7 @@ def test_build_image(dummy_builderer: AnyCaller) -> None:
         name="custom-name",
         push=False,
         qualified=False,
+        extra_tags=["additional_tag1", "extrac-2"],
     )
     tester.add_to(dummy_builderer)  # type: ignore
 
@@ -64,6 +65,7 @@ def test_build_image(dummy_builderer: AnyCaller) -> None:
                 "name": "custom-name",
                 "push": False,
                 "qualified": False,
+                "extra_tags": ["additional_tag1", "extrac-2"],
             },
         )
     ]
@@ -75,6 +77,7 @@ def test_build_images(dummy_builderer: AnyCaller) -> None:
         directories=["folder1", "folder2"],
         push=False,
         qualified=False,
+        extra_tags=["additional_tag1", "extrac-2"],
     )
     tester.add_to(dummy_builderer)  # type: ignore
 
@@ -86,6 +89,7 @@ def test_build_images(dummy_builderer: AnyCaller) -> None:
                 "directory": "folder1",
                 "push": False,
                 "qualified": False,
+                "extra_tags": ["additional_tag1", "extrac-2"],
             },
         ),
         (
@@ -95,6 +99,7 @@ def test_build_images(dummy_builderer: AnyCaller) -> None:
                 "directory": "folder2",
                 "push": False,
                 "qualified": False,
+                "extra_tags": ["additional_tag1", "extrac-2"],
             },
         ),
     ]
@@ -120,9 +125,7 @@ def test_extract_from_image(dummy_builderer: AnyCaller) -> None:
 
 def test_forward_image(dummy_builderer: AnyCaller) -> None:
     tester = builderer.config.ForwardImage(
-        type="forward_image",
-        name="image-name",
-        new_name="something-else",
+        type="forward_image", name="image-name", new_name="something-else", extra_tags=["additional_tag1", "extrac-2"]
     )
     tester.add_to(dummy_builderer)  # type: ignore
 
@@ -133,6 +136,7 @@ def test_forward_image(dummy_builderer: AnyCaller) -> None:
             {
                 "name": "image-name",
                 "new_name": "something-else",
+                "extra_tags": ["additional_tag1", "extrac-2"],
             },
         )
     ]

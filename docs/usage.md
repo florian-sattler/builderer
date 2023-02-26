@@ -113,14 +113,15 @@ Each step may be one of
 
 #### BuildImage
 
-| Property   | Type          | Required | Description                                                                            |
-| ---------- | ------------- | -------- | -------------------------------------------------------------------------------------- |
-| type       | "build_image" | Yes      | Type of the step                                                                       |
-| directory  | string        | Yes      | Directory containing the Dockerfile. This is also used as the build context.           |
-| dockerfile | string        | No       | Path to Dockerfile. Name of the resulting image. Defaults to `<directory>/Dockerfile`. |
-| name       | string        | No       | Name of the resulting image. Defaults to the name of the Dockerfiles parent directory. |
-| push       | boolean       | No       | Whether to push the image. Defaults to True.                                           |
-| qualified  | boolean       | No       | Whether to add the registry path and prefix to the image name. Defaults to True.       |
+| Property   | Type            | Required | Description                                                                            |
+| ---------- | --------------- | -------- | -------------------------------------------------------------------------------------- |
+| type       | "build_image"   | Yes      | Type of the step                                                                       |
+| directory  | string          | Yes      | Directory containing the Dockerfile. This is also used as the build context.           |
+| dockerfile | string          | No       | Path to Dockerfile. Name of the resulting image. Defaults to `<directory>/Dockerfile`. |
+| name       | string          | No       | Name of the resulting image. Defaults to the name of the Dockerfiles parent directory. |
+| push       | boolean         | No       | Whether to push the image. Defaults to True.                                           |
+| qualified  | boolean         | No       | Whether to add the registry path and prefix to the image name. Defaults to True.       |
+| extra_tags | array of string | No       | Additional tags to use in this step. Defaults to None.                                 |
 
 ??? Example
 
@@ -138,6 +139,7 @@ Each step may be one of
 | directories | array of string | Yes      | Directories containing each containing Dockerfile.                               |
 | push        | boolean         | No       | Whether to push the image. Defaults to True.                                     |
 | qualified   | boolean         | No       | Whether to add the registry path and prefix to the image name. Defaults to True. |
+| extra_tags  | array of string | No       | Additional tags to use in this step. Defaults to None.                           |
 
 ??? Example
 
@@ -172,11 +174,12 @@ Each step may be one of
 
 #### ForwardImage
 
-| Property | Type            | Required | Description                                                                                        |
-| -------- | --------------- | -------- | -------------------------------------------------------------------------------------------------- |
-| type     | "forward_image" | Yes      | Type of the step                                                                                   |
-| name     | string          | Yes      | Image name to forward.                                                                             |
-| new_name | string          | No       | Set a new name for the image. By default the basename of the pulled image without the tag is used. |
+| Property   | Type            | Required | Description                                                                                        |
+| ---------- | --------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| type       | "forward_image" | Yes      | Type of the step                                                                                   |
+| name       | string          | Yes      | Image name to forward.                                                                             |
+| new_name   | string          | No       | Set a new name for the image. By default the basename of the pulled image without the tag is used. |
+| extra_tags | array of string | No       | Additional tags to use in this step. Defaults to None.                                             |
 
 ??? Example
 
