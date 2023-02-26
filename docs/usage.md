@@ -6,7 +6,7 @@ Using the `builderer` python library is documented [here](library.md).
 
 !!! Note
 
-    builderer works great on projects containing multiple folder which need to be build, nested below a common root directory.
+    builderer works great on projects containing multiple folder which need to be build, each nested below a common root directory.
 
     ``` { .text .no-copy }
     example_workspace

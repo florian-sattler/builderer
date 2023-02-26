@@ -42,7 +42,7 @@ _builderer_ let's you build your container stack the **same way** your build pip
     Do you need more than a builder? Try _builderer_!
 
 _builderer_ makes it easy to build images both on CI/CD plattforms as well as your local machine using the same configuation and build command.
-<br>_(Obviously running builder requires python and either docker or podman)_
+<br>_(Running builder requires python and either docker or podman)_
 
 !!! tip
 
