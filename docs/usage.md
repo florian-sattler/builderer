@@ -1,6 +1,6 @@
 # Usage
 
-This document shows how to used a `.builderer.yml` file to configure your build.
+This document shows how to use a `.builderer.yml` file to configure your build.
 
 Using the `builderer` python library is documented [here](library.md).
 
