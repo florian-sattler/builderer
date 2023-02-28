@@ -147,13 +147,12 @@ class Builderer:
             path (str): Source path inside the image.
             dest (str): Destination paths. The file will be copied to all destinations individually.
         """
-        image_name = self._full_image_name(image)
         container_name = str(uuid.uuid4())
 
         self.action(
             name=f"Extracting from image: {path} -> {', '.join(dest)}",
             commands=[
-                [self.backend, "container", "create", "--name", container_name, image_name],
+                [self.backend, "container", "create", "--name", container_name, image],
                 *[[self.backend, "container", "cp", f"{container_name}:{path}", dst] for dst in dest],
                 [self.backend, "container", "rm", "-f", container_name],
             ],
