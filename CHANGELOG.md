@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allow specifying additional tags when building or forwarding an image on a per step basis.
 
+### Changed
+
+- `extract_from_image` now requires full image names allowing extraction from remote images.
+
 ### Fixed
 
 - Documentation Typos
