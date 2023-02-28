@@ -2,8 +2,8 @@ name: Update Builderer Documentation
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
+  release:
+    types: [published]
 
 permissions:
   contents: write

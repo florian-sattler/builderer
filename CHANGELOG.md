@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `extract_from_image` now requires full image names allowing extraction from remote images.
+- Documentation will now only be published for new releases.
 
 ### Fixed
 
