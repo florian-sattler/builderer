@@ -112,7 +112,7 @@ pyflakes==3.0.1
     # via flake8
 pygments==2.14.0
     # via mkdocs-material
-pymdown-extensions==9.9.2
+pymdown-extensions==10.0
     # via
     #   mkdocs-material
     #   mkdocstrings
