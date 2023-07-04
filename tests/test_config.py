@@ -142,6 +142,34 @@ def test_forward_image(dummy_builderer: AnyCaller) -> None:
     ]
 
 
+def test_forward_images(dummy_builderer: AnyCaller) -> None:
+    tester = builderer.config.ForwardImages(
+        type="forward_images", names=["image-name", "image-name-2"], extra_tags=["additional_tag1", "extrac-2"]
+    )
+    tester.add_to(dummy_builderer)  # type: ignore
+
+    assert dummy_builderer.calls == [
+        (
+            "forward_image",
+            tuple(),
+            {
+                "name": "image-name",
+                "new_name": None,
+                "extra_tags": ["additional_tag1", "extrac-2"],
+            },
+        ),
+        (
+            "forward_image",
+            tuple(),
+            {
+                "name": "image-name-2",
+                "new_name": None,
+                "extra_tags": ["additional_tag1", "extrac-2"],
+            },
+        ),
+    ]
+
+
 def test_pull_image(dummy_builderer: AnyCaller) -> None:
     tester = builderer.config.PullImage(type="pull_image", name="some-image-name")
     tester.add_to(dummy_builderer)  # type: ignore
