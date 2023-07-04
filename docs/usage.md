@@ -75,6 +75,7 @@ Each step may be one of
 - [BuildImages](#buildimages)
 - [ExtractFromImage](#extractfromimage)
 - [ForwardImage](#forwardimage)
+- [ForwardImages](#forwardimages)
 - [PullImage](#pullimage)
 - [PullImages](#pullimages)
 
@@ -187,6 +188,24 @@ Each step may be one of
     steps:
       - type: forward_image
         name: "registry.example.com:5000/some/image:latest"
+    ```
+
+#### ForwardImages
+
+| Property   | Type             | Required | Description                                            |
+| ---------- | ---------------- | -------- | ------------------------------------------------------ |
+| type       | "forward_images" | Yes      | Type of the step                                       |
+| names      | array of string  | Yes      | Image names to forward.                                |
+| extra_tags | array of string  | No       | Additional tags to use in this step. Defaults to None. |
+
+??? Example
+
+    ```yaml
+    steps:
+      - type: forward_images
+        names:
+          - "registry.example.com:5000/some/image:latest"
+          - "registry2.example.org:5555/another/image:stable"
     ```
 
 #### PullImage

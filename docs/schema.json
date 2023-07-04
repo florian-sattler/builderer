@@ -24,6 +24,9 @@
             "$ref": "#/definitions/ForwardImage"
           },
           {
+            "$ref": "#/definitions/ForwardImages"
+          },
+          {
             "$ref": "#/definitions/PullImage"
           },
           {
@@ -263,6 +266,41 @@
       "required": [
         "type",
         "name"
+      ],
+      "additionalProperties": false
+    },
+    "ForwardImages": {
+      "title": "ForwardImages",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "forward_images"
+          ],
+          "type": "string"
+        },
+        "names": {
+          "title": "Names",
+          "description": "Image names to forward.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "names"
       ],
       "additionalProperties": false
     },
