@@ -84,6 +84,20 @@ class ForwardImage(_BaseModel):
         )
 
 
+class ForwardImages(_BaseModel):
+    type: typing.Literal["forward_images"] = pydantic.Field(description=docs.step_type)
+    names: list[str] = pydantic.Field(description=docs.step_forward_names)
+    extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
+
+    def add_to(self, builderer: builderer.Builderer) -> None:
+        for name in self.names:
+            builderer.forward_image(
+                name=name,
+                new_name=None,
+                extra_tags=self.extra_tags,
+            )
+
+
 class PullImage(_BaseModel):
     type: typing.Literal["pull_image"] = pydantic.Field(description=docs.step_type)
     name: str = pydantic.Field(description=docs.step_pull_name)
@@ -116,7 +130,7 @@ class Parameters(_BaseModel):
 
 class BuildererConfig(_BaseModel):
     steps: list[
-        Action | BuildImage | BuildImages | ExtractFromImage | ForwardImage | PullImage | PullImages
+        Action | BuildImage | BuildImages | ExtractFromImage | ForwardImage | ForwardImages | PullImage | PullImages
     ] = pydantic.Field(description=docs.conf_steps)
 
     parameters: Parameters = pydantic.Field(

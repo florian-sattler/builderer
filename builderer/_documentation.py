@@ -44,6 +44,7 @@ step_extract_path = "Source path inside the image."
 step_extract_dest = "Destination paths. The file will be copied to all destinations individually."
 
 step_forward_name = "Image name to forward."
+step_forward_names = "Image names to forward."
 step_forward_new_name = (
     "Set a new name for the image. By default the basename of the pulled image without the tag is used."
 )
