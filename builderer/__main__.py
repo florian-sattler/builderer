@@ -5,6 +5,7 @@ import pydantic
 
 import builderer._documentation as docs
 from builderer import __version__
+from builderer.actions import ActionFactory
 from builderer.builderer import Builderer
 from builderer.config import BuildererConfig
 
@@ -24,6 +25,7 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
     parser.add_argument("--verbose", action="store_true", default=None, help=docs.arg_verbose_desc)
     parser.add_argument("--simulate", action="store_true", default=None, help=docs.arg_simulate_desc)
     parser.add_argument("--backend", choices=["docker", "podman"], help=docs.arg_backend_desc)
+    parser.add_argument("--max-parallel", type=int, default=None, help=docs.arg_max_parallel_desc)
     parser.add_argument("--config", type=str, default=".builderer.yml", help=docs.arg_cli_config)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
@@ -43,12 +45,19 @@ def main(argv: list[str] | None = None) -> int:
 
     builderer_args = config.parameters.dict(exclude_none=True) | cli_args
 
-    builderer = Builderer(**builderer_args)
+    factory_args = {k: v for k, v in builderer_args.items() if k not in {"verbose", "simulate", "max_parallel"}}
+    runner_args = {k: v for k, v in builderer_args.items() if k in {"verbose", "simulate", "max_parallel"}}
+
+    factory = ActionFactory(**factory_args)
+    runner = Builderer(**runner_args)
 
     for step in config.steps:
-        step.add_to(builderer)
+        runner.add_action_likes(*step.create(factory))
 
-    return builderer.run()
+    # print(runner.actions_main)
+    # print(runner.actions_post)
+
+    return runner.run()
 
 
 if __name__ == "__main__":

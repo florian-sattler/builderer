@@ -1,88 +1,48 @@
 """Builderers file config is a thin wrapper around this library."""
 
-import collections
-import dataclasses
-import os
-import posixpath
+import concurrent.futures
 import subprocess
-import typing
-import uuid
+import threading
 
-
-@dataclasses.dataclass(frozen=True)
-class Action:
-    name: str
-    commands: list[list[str]]
+from builderer.actions import Action, ActionGroup
 
 
 class Builderer:
-    """The Builderer class is used to collect build tasks and issue them afterwards."""
+    """The Runner class is used to issue collected build tasks."""
 
     def __init__(
         self,
         *,
-        registry: str | None = None,
-        prefix: str | None = None,
-        push: bool = True,
-        cache: bool = False,
         verbose: bool = False,
-        tags: list[str] = ["latest"],
         simulate: bool = False,
-        backend: typing.Literal["docker", "podman"] = "docker",
+        max_parallel: int = 1,  # TODO fix
     ) -> None:
-        """Builderer runs commands inside in two queues. A action queue and a post queue.
+        """Run commands inside in two queues. A action queue and a post queue.
         First the action queue gets handled (FIFO) then the corresponding post actions get called in reversed order (LIFO)
         Pushing is done as a post steps. This means a build is only pushed if builder of all images was successfull.
 
         Args:
-            registry (str | None, optional): Registry URL. Defaults to None.
-            prefix (str | None, optional): Registry folder / namespace / user. Defaults to None.
-            push (bool, optional): Whether to allow pushing images. Defaults to True.
-            cache (bool, optional): Allow using cached images. Defaults to False.
             verbose (bool, optional): Verbose output. Defaults to False.
-            tags (list[str], optional): Tags to use. Defaults to ["latest"].
             simulate (bool, optional): Prevent issuing commands. Defaults to False.
-            backend (typing.Literal["docker", "podman"], optional): Overwrite backend to use. Defaults to "docker".
+            max_parallel (int, optional): Overwrite backend to use. Defaults to "docker".
         """
-        self.tags = tags
-        self.registry = registry
-        self.prefix = prefix
-        self.cache = cache
-        self.backend = backend
+        if not isinstance(max_parallel, int) or max_parallel < 1:
+            raise ValueError("max_parallel needs to be a positive integer!")
+
         self.simulate = simulate
         self.verbose = verbose
-        self.push = push
+        self.max_parallel = max_parallel
 
-        self._actions: collections.deque[Action] = collections.deque()
-        self._post: collections.deque[Action] = collections.deque()
+        self.actions_main: list[Action | ActionGroup] = []
+        self.actions_post: list[Action | ActionGroup] = []
 
-    def action(self, name: str, commands: list[list[str]], post: bool) -> None:
-        """A generic action with multiple commands.
+    def add_action_likes(self, main: Action | ActionGroup | None, post: Action | ActionGroup | None) -> None:
+        if main is not None:
+            self.actions_main.append(main)
+        if post is not None:
+            self.actions_post.append(post)
 
-        Hint: Use this mechanism if other commands aren't sufficient for your usecase.
-
-        Args:
-            name (str): Name of the action
-            commands (list[list[str]]): List of commands. Each command is a list of strings: the executable followed by arguments.
-            post (bool): Whether to add the action to the post queue.
-        """
-        item = Action(name=name, commands=commands)
-
-        if post:
-            self._post.appendleft(item)
-        else:
-            self._actions.append(item)
-
-    def _full_image_name(self, name: str) -> str:
-        return posixpath.join(self.registry or "", self.prefix or "", name)
-
-    def _build_cmd(self, full_name: str, extra_tags: list[str]) -> list[str]:
-        tags = [i for tag in (self.tags + extra_tags) for i in ["-t", f"{full_name}:{tag}"]]
-        cache = ["--no-cache"] if not self.cache else []
-
-        return [self.backend, "build", *tags, *cache]
-
-    def _run_cmd(self, command: list[str]) -> tuple[int, bytes]:
+    def run_cmd(self, command: list[str]) -> tuple[int, bytes]:
         if self.simulate:
             return 0, b""
 
@@ -93,117 +53,56 @@ class Builderer:
 
         return proc.returncode, proc.stdout or b""
 
-    def build_image(
-        self,
-        directory: str,
-        *,
-        dockerfile: str | None = None,
-        name: str | None = None,
-        push: bool = True,
-        qualified: bool = True,
-        extra_tags: list[str] | None = None,
-    ) -> None:
-        """Build a docker image and push it to the registry.
+    def run_action(self, action: Action) -> tuple[int, bytes]:
+        print(action.name, flush=True)
 
-        Args:
-            directory (str): Directory containing the build context.
-            dockerfile (str | None, optional): Path to Dockerfile. Name of the resulting image. Defaults to <directory>/Dockerfile.
-            name (str | None, optional): Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
-            push (bool, optional): Whether to push the image. Defaults to True.
-            qualified (bool, optional): Whether to add the registry path and prefix to the image name. Defaults to True.
-            extra_tags: additional tags to use for this image. Defaults to None.
-        """
-        if dockerfile is None:
-            dockerfile = os.path.join(directory, "Dockerfile")
+        for command in action.commands:
+            if self.verbose:
+                print(f"{command}", flush=True)
 
-        if name is None:
-            name = os.path.basename(directory)
+            returncode, stdout = self.run_cmd(command)
 
-        if extra_tags is None:
-            extra_tags = []
+            if returncode != 0:
+                return returncode, stdout
 
-        image_name = self._full_image_name(name) if qualified else name
+        return 0, b""
 
-        self.action(
-            name=f"Building image: {name}",
-            commands=[[*self._build_cmd(image_name, extra_tags), "-f", dockerfile, directory]],
-            post=False,
-        )
+    def run_action_group(self, group: ActionGroup) -> tuple[int, bytes]:
+        evt = threading.Event()
+        error_data: tuple[int, bytes] | None = None
 
-        if not push or not self.push:
-            return
+        # context is needed to stop executor from spawning new tasks when handling an exception
+        def run_in_context(act: Action) -> None:
+            nonlocal error_data
 
-        self.action(
-            name=f"Pushing image: {name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            post=True,
-        )
+            if evt.is_set():
+                return
 
-    def extract_from_image(self, image: str, path: str, *dest: str) -> None:
-        """Copy a file from within a docker image.
+            try:
+                returncode, stdout = self.run_action(act)
+            except Exception as e:
+                error_data = (1, str(e).encode())
+                evt.set()
 
-        Args:
-            image (str): Name of the image to copy from.
-            path (str): Source path inside the image.
-            dest (str): Destination paths. The file will be copied to all destinations individually.
-        """
-        container_name = str(uuid.uuid4())
+                raise RuntimeError("Error execution action") from e
 
-        self.action(
-            name=f"Extracting from image: {path} -> {', '.join(dest)}",
-            commands=[
-                [self.backend, "container", "create", "--name", container_name, image],
-                *[[self.backend, "container", "cp", f"{container_name}:{path}", dst] for dst in dest],
-                [self.backend, "container", "rm", "-f", container_name],
-            ],
-            post=False,
-        )
+            if returncode != 0:
+                error_data = (returncode, stdout)
+                evt.set()
 
-    def forward_image(self, name: str, *, new_name: str | None = None, extra_tags: list[str] | None = None) -> None:
-        """Pulls an image from a registry, retags it and pushes it using the new names.
+                raise RuntimeError("Error execution action")
 
-        Args:
-            name (str): image name to pull
-            new_name (str | None, optional): Set a new name for the image. By default the basename of the pulled image without the tag is used. Defaults to None.
-            extra_tags: additional tags to use for this image. Defaults to None.
-        """
-        if new_name is None:
-            new_name = os.path.basename(name).split(":")[0]
+        executor = concurrent.futures.ThreadPoolExecutor(min(group.num_parallel, self.max_parallel))
 
-        if extra_tags is None:
-            extra_tags = []
+        fs = [executor.submit(run_in_context, action) for action in group.actions]
 
-        image_name = self._full_image_name(new_name)
+        concurrent.futures.wait(fs, return_when=concurrent.futures.FIRST_EXCEPTION)
+        if evt.is_set():
+            executor.shutdown(wait=True, cancel_futures=True)
+            assert error_data is not None
+            return error_data
 
-        self.action(
-            name=f"Forwarding image: {name} -> {new_name}",
-            commands=[
-                [self.backend, "pull", name],
-                *[[self.backend, "tag", name, f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            ],
-            post=False,
-        )
-
-        if not self.push:
-            return
-
-        self.action(
-            name=f"Pushing image: {new_name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            post=True,
-        )
-
-    def pull_image(self, name: str) -> None:
-        """Pulls an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds)
-
-        Args:
-            name (str): image name to pull.
-        """
-        self.action(
-            name=f"Pulling image: {name}",
-            commands=[[self.backend, "pull", name]],
-            post=False,
-        )
+        return 0, b""
 
     def run(self) -> int:
         """After adding all steps. This method will start to issue all commands. It stops when done or a command fails.
@@ -211,22 +110,21 @@ class Builderer:
         Returns:
             int: return code. On success this will be zero. Otherwise it will be the return code of the failed command.
         """
-        for queue in [self._actions, self._post]:
-            for action in queue:
-                print(action.name, flush=True)
+        for queue in [self.actions_main, reversed(self.actions_post)]:
+            for item in queue:
+                if isinstance(item, Action):
+                    returncode, stdout = self.run_action(item)
+                elif isinstance(item, ActionGroup):
+                    returncode, stdout = self.run_action_group(item)
+                else:
+                    raise ValueError(f"Unexpected queue entry: {item} of type {type(item)}")
 
-                for command in action.commands:
-                    if self.verbose:
-                        print(f"{command}", flush=True)
+                if returncode != 0:
+                    print("Encountered error running:", flush=True)
 
-                    returncode, stdout = self._run_cmd(command)
+                    if not self.verbose:
+                        print(stdout.decode(), flush=True)
 
-                    if returncode != 0:
-                        print("Encountered error running:", flush=True)
-
-                        if not self.verbose:
-                            print(stdout.decode(), flush=True)
-
-                        return returncode
+                    return returncode
 
         return 0
