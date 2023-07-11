@@ -9,11 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added step to forward multiple images
+- Added step to forward multiple images.
+- Implemented parallel execution of actions.
+  This breaks backwards compatibility with `1.X` versions when used as a library.
+  Config files are still compatible with the new execution engine, however some steps are now being executed in parallel:
+
+  - `BuildImages`
+  - `ForwardImages`
+  - `PullImage`
+
+  Furthermore the `Group` step was added to allow custom parallel execution.
+  Take a look at the [documentation](https://builderer.florian-sattler.de) to learn more!
 
 ### Fixed
 
-- Recompiled `requirements.txt`
+- Recompiled `requirements.txt`.
 
 ## [v1.1.0] - 2023-02-28
 
@@ -43,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Configuation for [black](https://black.readthedocs.io/en/stable/) and [flake8](https://flake8.pycqa.org/en/latest/).
+- Configuration for [black](https://black.readthedocs.io/en/stable/) and [flake8](https://flake8.pycqa.org/en/latest/).
 - Call `Builderer` methods using keyword arguments from file config when ever possible.
 - Updated dependencies and merged into single `requirements.txt`
 

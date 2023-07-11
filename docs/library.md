@@ -7,13 +7,14 @@ Builderer can easily be used without configuration files.
 The following example pipeline
 
 ```python
-from builderer import Builderer
+from builderer import Builderer, ActionFactory
 
-b = Builderer(registry="registry.example.com", prefix="project/name", simulate=True)
+f = ActionFactory(registry="registry.example.com", prefix="project/name")
+b = Builderer(simulate=True)
 
-b.build_image("frontend")
-b.build_image("backend")
-b.build_image("database")
+b.add_action_likes(*f.build_image("frontend"))
+b.add_action_likes(*f.build_image("backend"))
+b.add_action_likes(*f.build_image("database"))
 
 b.run()
 ```
@@ -37,4 +38,5 @@ Note that because `simulate=True` was passed, no commands got issued.
 
 ## Reference
 
+::: builderer.actions
 ::: builderer.builderer

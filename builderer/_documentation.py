@@ -15,17 +15,21 @@ arg_simulate_title = "Simulate execution"
 arg_simulate_desc = "Prevent issuing any commands just do the printing."
 arg_backend_title = "Build Backend"
 arg_backend_desc = "Overwrite the backend used to build, tag and pull images. Defaults to 'docker'"
+arg_max_parallel_title = "Maximum number of parallel jobs"
+arg_max_parallel_desc = "Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used."
+
 
 # just cli
 arg_cli_config = "Path to %(prog)s yaml configuration file. Defaults to '.builderer.yml'"
 arg_cli_no_push = "Prevent pushing images in all steps."
 
 # just parameters
-conf_parameters = "Overwrite default parameters. Values set here will be overwritten by command line arguments."
+conf_parameters = "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."
 conf_steps = "List of steps to execute."
 
 # steps
 step_type = "Type of the step"
+step_num_parallel_tmpl = "Number of parallel executions. Defaults to {}"
 
 step_action_name = "Name printed before running the action"
 step_action_commands = "List of commands. Each command is a list of strings: the executable followed by arguments."

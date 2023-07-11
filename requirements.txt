@@ -30,6 +30,10 @@ coverage[toml]==7.2.7
 exceptiongroup==1.1.2
     # via pytest
 flake8==6.0.0
+    # via
+    #   -r requirements-dev.in
+    #   flake8-docstrings
+flake8-docstrings==1.7.0
     # via -r requirements-dev.in
 ghp-import==2.1.0
     # via mkdocs
@@ -106,6 +110,8 @@ pycodestyle==2.10.0
     # via flake8
 pydantic==1.10.11
     # via builderer (setup.cfg)
+pydocstyle==6.3.0
+    # via flake8-docstrings
 pyflakes==3.0.1
     # via flake8
 pygments==2.15.1
@@ -141,6 +147,8 @@ requests==2.31.0
     # via mkdocs-material
 six==1.16.0
     # via python-dateutil
+snowballstemmer==2.2.0
+    # via pydocstyle
 tomli==2.0.1
     # via
     #   black

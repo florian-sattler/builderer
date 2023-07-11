@@ -1,5 +1,6 @@
 {
   "title": "BuildererConfig",
+  "description": "builderer configuration.",
   "type": "object",
   "properties": {
     "steps": {
@@ -27,6 +28,9 @@
             "$ref": "#/definitions/ForwardImages"
           },
           {
+            "$ref": "#/definitions/Group"
+          },
+          {
             "$ref": "#/definitions/PullImage"
           },
           {
@@ -37,7 +41,7 @@
     },
     "parameters": {
       "title": "Parameters",
-      "description": "Overwrite default parameters. Values set here will be overwritten by command line arguments.",
+      "description": "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments.",
       "allOf": [
         {
           "$ref": "#/definitions/Parameters"
@@ -52,6 +56,7 @@
   "definitions": {
     "Action": {
       "title": "Action",
+      "description": "A generic action with multiple commands.\n\nUse this mechanism if other steps aren't sufficient for your usecase.",
       "type": "object",
       "properties": {
         "type": {
@@ -94,6 +99,7 @@
     },
     "BuildImage": {
       "title": "BuildImage",
+      "description": "Build a docker image and push it to the registry.",
       "type": "object",
       "properties": {
         "type": {
@@ -148,6 +154,7 @@
     },
     "BuildImages": {
       "title": "BuildImages",
+      "description": "Build multiple docker images and push them to the registry.",
       "type": "object",
       "properties": {
         "type": {
@@ -185,6 +192,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 1",
+          "default": 1,
+          "type": "integer"
         }
       },
       "required": [
@@ -195,6 +208,7 @@
     },
     "ExtractFromImage": {
       "title": "ExtractFromImage",
+      "description": "Copy a file from within a docker image.",
       "type": "object",
       "properties": {
         "type": {
@@ -234,6 +248,7 @@
     },
     "ForwardImage": {
       "title": "ForwardImage",
+      "description": "Pull an image from a registry, retag it and push it maybe using new names.",
       "type": "object",
       "properties": {
         "type": {
@@ -271,6 +286,7 @@
     },
     "ForwardImages": {
       "title": "ForwardImages",
+      "description": "Pull images, retag and push them.",
       "type": "object",
       "properties": {
         "type": {
@@ -296,6 +312,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 4",
+          "default": 4,
+          "type": "integer"
         }
       },
       "required": [
@@ -306,6 +328,7 @@
     },
     "PullImage": {
       "title": "PullImage",
+      "description": "Pull an image from a registry.\n\nThis might be usefull to ensure a local image is up to date (e.g. for local builds).",
       "type": "object",
       "properties": {
         "type": {
@@ -328,8 +351,59 @@
       ],
       "additionalProperties": false
     },
+    "Group": {
+      "title": "Group",
+      "description": "A group of actions which might be run in parallel.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "group"
+          ],
+          "type": "string"
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to {}",
+          "default": 1,
+          "type": "integer"
+        },
+        "steps": {
+          "title": "Steps",
+          "description": "List of steps to execute.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Action"
+              },
+              {
+                "$ref": "#/definitions/BuildImage"
+              },
+              {
+                "$ref": "#/definitions/ExtractFromImage"
+              },
+              {
+                "$ref": "#/definitions/ForwardImage"
+              },
+              {
+                "$ref": "#/definitions/PullImage"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "type",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
     "PullImages": {
       "title": "PullImages",
+      "description": "Pull images from a registry.\n\nThis might be usefull to ensure local images are up to date (e.g. for local builds).",
       "type": "object",
       "properties": {
         "type": {
@@ -347,6 +421,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 4",
+          "default": 4,
+          "type": "integer"
         }
       },
       "required": [
@@ -357,6 +437,7 @@
     },
     "Parameters": {
       "title": "Parameters",
+      "description": "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments.",
       "type": "object",
       "properties": {
         "registry": {
@@ -405,6 +486,11 @@
             "podman"
           ],
           "type": "string"
+        },
+        "max_parallel": {
+          "title": "Maximum number of parallel jobs",
+          "description": "Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used.",
+          "type": "integer"
         }
       },
       "additionalProperties": false

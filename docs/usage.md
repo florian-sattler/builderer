@@ -39,10 +39,10 @@ calling the [command line interface](cli.md) to run your build.
 
 This defines the config file, typically called `.builderer.yml`.
 
-| Property                  | Type   | Required | Description                                                                                  |
-| ------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| [steps](#steps)           | array  | Yes      | List of steps to execute.                                                                    |
-| [parameters](#parameters) | object | No       | Overwrite default parameters. Values set here will be overwritten by command line arguments. |
+| Property                  | Type   | Required | Description                                                                                          |
+| ------------------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| [parameters](#parameters) | object | No       | Overwrite default parameters. Values set here will in turn be overwritten by command line arguments. |
+| [steps](#steps)           | array  | Yes      | List of steps to execute.                                                                            |
 
 ??? Example
 
@@ -66,6 +66,37 @@ This defines the config file, typically called `.builderer.yml`.
         - backend
     ```
 
+### Parameters
+
+| Property     | Type                 | Required | Description                                                                                                                                                 |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| registry     | string               | No       | Set the registry url. You may include a port using the colon notation (example.com:3000/). This is needed when using a non standard port. Unset by default. |
+| prefix       | string               | No       | Set the directory for all images. This is the image component between registry url and image name. For example on docker hub this is used for the username. |
+| push         | boolean              | No       | Whether to allow pushing images.                                                                                                                            |
+| cache        | boolean              | No       | Whether to allow using cached images. This is especially usefull for local builds.                                                                          |
+| verbose      | boolean              | No       | Show issued commands and their live output.                                                                                                                 |
+| tags         | array of string      | No       | One or multiple tags to use for each image. Defaults to ['latest']                                                                                          |
+| simulate     | boolean              | No       | Prevent issuing any commands just do the printing.                                                                                                          |
+| backend      | "docker" or "podman" | No       | Overwrite the backend used to build, tag and pull images. Defaults to 'docker'                                                                              |
+| max_parallel | integer              | No       | Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used.                                   |
+
+??? Example
+
+    ```yaml
+    parameters:
+      registry: my-registry.example.com
+      prefix: username
+      push: false
+      cache: true
+      verbose: true
+      tags:
+        - custom
+        - latest
+      simulate: true
+      backend: podman
+      max_parallel: 1
+    ```
+
 ### Steps
 
 Each step may be one of
@@ -76,6 +107,7 @@ Each step may be one of
 - [ExtractFromImage](#extractfromimage)
 - [ForwardImage](#forwardimage)
 - [ForwardImages](#forwardimages)
+- [Group](#group)
 - [PullImage](#pullimage)
 - [PullImages](#pullimages)
 
@@ -134,13 +166,14 @@ Each step may be one of
 
 #### BuildImages
 
-| Property    | Type            | Required | Description                                                                      |
-| ----------- | --------------- | -------- | -------------------------------------------------------------------------------- |
-| type        | "build_images"  | Yes      | Type of the step                                                                 |
-| directories | array of string | Yes      | Directories containing each containing Dockerfile.                               |
-| push        | boolean         | No       | Whether to push the image. Defaults to True.                                     |
-| qualified   | boolean         | No       | Whether to add the registry path and prefix to the image name. Defaults to True. |
-| extra_tags  | array of string | No       | Additional tags to use in this step. Defaults to None.                           |
+| Property     | Type            | Required | Description                                                                      |
+| ------------ | --------------- | -------- | -------------------------------------------------------------------------------- |
+| type         | "build_images"  | Yes      | Type of the step                                                                 |
+| directories  | array of string | Yes      | Directories containing each containing Dockerfile.                               |
+| push         | boolean         | No       | Whether to push the image. Defaults to True.                                     |
+| qualified    | boolean         | No       | Whether to add the registry path and prefix to the image name. Defaults to True. |
+| extra_tags   | array of string | No       | Additional tags to use in this step. Defaults to None.                           |
+| num_parallel | integer         | No       | Number of parallel executions. Defaults to 1                                     |
 
 ??? Example
 
@@ -192,11 +225,12 @@ Each step may be one of
 
 #### ForwardImages
 
-| Property   | Type             | Required | Description                                            |
-| ---------- | ---------------- | -------- | ------------------------------------------------------ |
-| type       | "forward_images" | Yes      | Type of the step                                       |
-| names      | array of string  | Yes      | Image names to forward.                                |
-| extra_tags | array of string  | No       | Additional tags to use in this step. Defaults to None. |
+| Property     | Type             | Required | Description                                            |
+| ------------ | ---------------- | -------- | ------------------------------------------------------ |
+| type         | "forward_images" | Yes      | Type of the step                                       |
+| names        | array of string  | Yes      | Image names to forward.                                |
+| extra_tags   | array of string  | No       | Additional tags to use in this step. Defaults to None. |
+| num_parallel | integer          | No       | Number of parallel executions. Defaults to 4           |
 
 ??? Example
 
@@ -206,6 +240,35 @@ Each step may be one of
         names:
           - "registry.example.com:5000/some/image:latest"
           - "registry2.example.org:5555/another/image:stable"
+    ```
+
+#### Group
+
+| Property     | Type    | Required | Description                    |
+| ------------ | ------- | -------- | ------------------------------ |
+| type         | "group" | Yes      | Type of the step               |
+| num_parallel | integer | Yes      | Number of parallel executions. |
+| steps        | array   | Yes      | List of steps to execute.      |
+
+Valid steps are:
+
+- [Action](#action)
+- [BuildImage](#buildimage)
+- [ExtractFromImage](#extractfromimage)
+- [ForwardImage](#forwardimage)
+- [PullImage](#pullimage)
+
+??? Example
+
+    ```yaml
+    steps:
+      - type: group
+        num_parallel: 2
+        steps:
+          - type: pull_image
+            name: "registry2.example.org:5555/another/image:stable"
+          - type: forward_image
+            name: "registry.example.com:5000/some/image:latest"
     ```
 
 #### PullImage
@@ -225,10 +288,11 @@ Each step may be one of
 
 #### PullImages
 
-| Property | Type            | Required | Description          |
-| -------- | --------------- | -------- | -------------------- |
-| type     | "pull_images"   | Yes      | Type of the step     |
-| names    | array of string | Yes      | Image names to pull. |
+| Property     | Type            | Required | Description                                  |
+| ------------ | --------------- | -------- | -------------------------------------------- |
+| type         | "pull_images"   | Yes      | Type of the step                             |
+| names        | array of string | Yes      | Image names to pull.                         |
+| num_parallel | integer         | No       | Number of parallel executions. Defaults to 4 |
 
 ??? Example
 
@@ -238,33 +302,4 @@ Each step may be one of
         names:
           - "registry.example.com:5000/some/image:latest"
           - "docker.io/nginx:alpine"
-    ```
-
-### Parameters
-
-| Property | Type                 | Required | Description                                                                                                                                                 |
-| -------- | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| registry | string               | No       | Set the registry url. You may include a port using the colon notation (example.com:3000/). This is needed when using a non standard port. Unset by default. |
-| prefix   | string               | No       | Set the directory for all images. This is the image component between registry url and image name. For example on docker hub this is used for the username. |
-| push     | boolean              | No       | Whether to allow pushing images.                                                                                                                            |
-| cache    | boolean              | No       | Whether to allow using cached images. This is especially usefull for local builds.                                                                          |
-| verbose  | boolean              | No       | Show issued commands and their live output.                                                                                                                 |
-| tags     | array of string      | No       | One or multiple tags to use for each image. Defaults to ['latest']                                                                                          |
-| simulate | boolean              | No       | Prevent issuing any commands just do the printing.                                                                                                          |
-| backend  | "docker" or "podman" | No       | Overwrite the backend used to build, tag and pull images. Defaults to 'docker'                                                                              |
-
-??? Example
-
-    ```yaml
-    parameters:
-      registry: my-registry.example.com
-      prefix: username
-      push: false
-      cache: true
-      verbose: true
-      tags:
-        - custom
-        - latest
-      simulate: true
-      backend: podman
     ```

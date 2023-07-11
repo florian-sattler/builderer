@@ -1,88 +1,74 @@
-"""Builderers file config is a thin wrapper around this library."""
+"""Builderers file config is a thin wrapper around this module as well as the action module."""
 
-import collections
-import dataclasses
-import os
-import posixpath
+import concurrent.futures
 import subprocess
-import typing
-import uuid
+import threading
 
-
-@dataclasses.dataclass(frozen=True)
-class Action:
-    name: str
-    commands: list[list[str]]
+from builderer.actions import Action, ActionGroup
 
 
 class Builderer:
-    """The Builderer class is used to collect build tasks and issue them afterwards."""
+    """The Builderer class is used to issue collected actions."""
 
     def __init__(
         self,
         *,
-        registry: str | None = None,
-        prefix: str | None = None,
-        push: bool = True,
-        cache: bool = False,
         verbose: bool = False,
-        tags: list[str] = ["latest"],
         simulate: bool = False,
-        backend: typing.Literal["docker", "podman"] = "docker",
+        max_parallel: int | None = None,
     ) -> None:
-        """Builderer runs commands inside in two queues. A action queue and a post queue.
-        First the action queue gets handled (FIFO) then the corresponding post actions get called in reversed order (LIFO)
-        Pushing is done as a post steps. This means a build is only pushed if builder of all images was successfull.
+        """Run commands inside in two queues. A action queue and a post queue.
+
+        First the main actions gets handled (FIFO) then the corresponding post actions get called in reversed order (LIFO)
+        Example:
+            Building is done first, pushing is done as a post steps.
+            This means a build is only pushed if all other main actions have been successful.
 
         Args:
-            registry (str | None, optional): Registry URL. Defaults to None.
-            prefix (str | None, optional): Registry folder / namespace / user. Defaults to None.
-            push (bool, optional): Whether to allow pushing images. Defaults to True.
-            cache (bool, optional): Allow using cached images. Defaults to False.
             verbose (bool, optional): Verbose output. Defaults to False.
-            tags (list[str], optional): Tags to use. Defaults to ["latest"].
             simulate (bool, optional): Prevent issuing commands. Defaults to False.
-            backend (typing.Literal["docker", "podman"], optional): Overwrite backend to use. Defaults to "docker".
+            max_parallel (int, optional): Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used.
         """
-        self.tags = tags
-        self.registry = registry
-        self.prefix = prefix
-        self.cache = cache
-        self.backend = backend
+        if max_parallel is not None and (not isinstance(max_parallel, int) or max_parallel < 1):
+            raise ValueError("if set max_parallel needs to be a positive integer!")
+
         self.simulate = simulate
         self.verbose = verbose
-        self.push = push
+        self.max_parallel = max_parallel
 
-        self._actions: collections.deque[Action] = collections.deque()
-        self._post: collections.deque[Action] = collections.deque()
+        self.actions_main: list[Action | ActionGroup] = []
+        self.actions_post: list[Action | ActionGroup] = []
 
-    def action(self, name: str, commands: list[list[str]], post: bool) -> None:
-        """A generic action with multiple commands.
+    def add_action_likes(self, main: Action | ActionGroup | None, post: Action | ActionGroup | None) -> None:
+        """Add two Actions / ActionGroups to the main and the postprocessing queues.
 
-        Hint: Use this mechanism if other commands aren't sufficient for your usecase.
+        If None is passed for an argument it will be ignored.
 
         Args:
-            name (str): Name of the action
-            commands (list[list[str]]): List of commands. Each command is a list of strings: the executable followed by arguments.
-            post (bool): Whether to add the action to the post queue.
+            main (Action | ActionGroup | None): A Action / ActionGroup to add to the main queue
+            post (Action | ActionGroup | None): A Action / ActionGroup to add to the postprocessing queue
         """
-        item = Action(name=name, commands=commands)
+        if main is not None:
+            self.actions_main.append(main)
+        if post is not None:
+            self.actions_post.append(post)
 
-        if post:
-            self._post.appendleft(item)
-        else:
-            self._actions.append(item)
+    def run_cmd(self, command: list[str]) -> tuple[int, bytes]:
+        """Run a single command.
 
-    def _full_image_name(self, name: str) -> str:
-        return posixpath.join(self.registry or "", self.prefix or "", name)
+        Output is only captured and returned if not running verbosely.
 
-    def _build_cmd(self, full_name: str, extra_tags: list[str]) -> list[str]:
-        tags = [i for tag in (self.tags + extra_tags) for i in ["-t", f"{full_name}:{tag}"]]
-        cache = ["--no-cache"] if not self.cache else []
+        Does nothing if self.simulate is True and returns (0, b"").
 
-        return [self.backend, "build", *tags, *cache]
+        Args:
+            command (list[str]): Command to run.
 
-    def _run_cmd(self, command: list[str]) -> tuple[int, bytes]:
+        Raises:
+            FileNotFoundError: if the executable was not found.
+
+        Returns:
+            tuple[int, bytes]: status code and command output if captured otherwise b"".
+        """
         if self.simulate:
             return 0, b""
 
@@ -93,140 +79,113 @@ class Builderer:
 
         return proc.returncode, proc.stdout or b""
 
-    def build_image(
-        self,
-        directory: str,
-        *,
-        dockerfile: str | None = None,
-        name: str | None = None,
-        push: bool = True,
-        qualified: bool = True,
-        extra_tags: list[str] | None = None,
-    ) -> None:
-        """Build a docker image and push it to the registry.
+    def run_action(self, action: Action) -> tuple[int, bytes]:
+        """Run a single Action.
+
+        The sequentialls runs each command of the given action.
+        Stops if an error occurs and returns failed return code and
+        command output. Output is only captured if not running verbosely.
+
+        Does nothing if self.simulate is True and returns (0, b"").
 
         Args:
-            directory (str): Directory containing the build context.
-            dockerfile (str | None, optional): Path to Dockerfile. Name of the resulting image. Defaults to <directory>/Dockerfile.
-            name (str | None, optional): Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.
-            push (bool, optional): Whether to push the image. Defaults to True.
-            qualified (bool, optional): Whether to add the registry path and prefix to the image name. Defaults to True.
-            extra_tags: additional tags to use for this image. Defaults to None.
+            action (Action): Action to run.
+
+        Raises:
+            FileNotFoundError: if any executable was not found.
+
+        Returns:
+            tuple[int, bytes]: status code and command output if an error occurred otherwise b"".
         """
-        if dockerfile is None:
-            dockerfile = os.path.join(directory, "Dockerfile")
+        print(action.name, flush=True)
 
-        if name is None:
-            name = os.path.basename(directory)
+        for command in action.commands:
+            if self.verbose:
+                print(f"{command}", flush=True)
 
-        if extra_tags is None:
-            extra_tags = []
+            returncode, stdout = self.run_cmd(command)
 
-        image_name = self._full_image_name(name) if qualified else name
+            if returncode != 0:
+                return returncode, stdout
 
-        self.action(
-            name=f"Building image: {name}",
-            commands=[[*self._build_cmd(image_name, extra_tags), "-f", dockerfile, directory]],
-            post=False,
-        )
+        return 0, b""
 
-        if not push or not self.push:
-            return
+    def run_action_group(self, group: ActionGroup) -> tuple[int, bytes]:
+        """Run an action group.
 
-        self.action(
-            name=f"Pushing image: {name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            post=True,
-        )
+        Contained actions get started sequentially, they might however run in
+        parallel as specified in the group and capped by self.max_parallel.
+        Any exception encountered as well as any failed command will stop
+        executing new actions and wait for all running actions to complete.
 
-    def extract_from_image(self, image: str, path: str, *dest: str) -> None:
-        """Copy a file from within a docker image.
+        Any encountered error is returned alongside the corresponding code.
+
 
         Args:
-            image (str): Name of the image to copy from.
-            path (str): Source path inside the image.
-            dest (str): Destination paths. The file will be copied to all destinations individually.
+            group (ActionGroup): group to run.
+
+        Returns:
+            tuple[int, bytes]: status code and command output if an error occurred otherwise b"".
         """
-        container_name = str(uuid.uuid4())
+        evt = threading.Event()
+        error_data: tuple[int, bytes] | None = None
 
-        self.action(
-            name=f"Extracting from image: {path} -> {', '.join(dest)}",
-            commands=[
-                [self.backend, "container", "create", "--name", container_name, image],
-                *[[self.backend, "container", "cp", f"{container_name}:{path}", dst] for dst in dest],
-                [self.backend, "container", "rm", "-f", container_name],
-            ],
-            post=False,
+        # context is needed to stop executor from spawning new tasks when handling an exception
+        def run_in_context(act: Action) -> None:
+            nonlocal error_data
+
+            if evt.is_set():
+                return
+
+            try:
+                returncode, stdout = self.run_action(act)
+            except Exception as e:
+                error_data = (1, str(e).encode())
+                evt.set()
+
+                raise RuntimeError("Error execution action") from e
+
+            if returncode != 0:
+                error_data = (returncode, stdout)
+                evt.set()
+
+                raise RuntimeError("Error execution action")
+
+        executor = concurrent.futures.ThreadPoolExecutor(
+            group.num_parallel if self.max_parallel is None else min(group.num_parallel, self.max_parallel)
         )
 
-    def forward_image(self, name: str, *, new_name: str | None = None, extra_tags: list[str] | None = None) -> None:
-        """Pulls an image from a registry, retags it and pushes it using the new names.
+        fs = [executor.submit(run_in_context, action) for action in group.actions]
 
-        Args:
-            name (str): image name to pull
-            new_name (str | None, optional): Set a new name for the image. By default the basename of the pulled image without the tag is used. Defaults to None.
-            extra_tags: additional tags to use for this image. Defaults to None.
-        """
-        if new_name is None:
-            new_name = os.path.basename(name).split(":")[0]
+        concurrent.futures.wait(fs, return_when=concurrent.futures.FIRST_EXCEPTION)
+        if evt.is_set():
+            executor.shutdown(wait=True, cancel_futures=True)
+            assert error_data is not None
+            return error_data
 
-        if extra_tags is None:
-            extra_tags = []
-
-        image_name = self._full_image_name(new_name)
-
-        self.action(
-            name=f"Forwarding image: {name} -> {new_name}",
-            commands=[
-                [self.backend, "pull", name],
-                *[[self.backend, "tag", name, f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            ],
-            post=False,
-        )
-
-        if not self.push:
-            return
-
-        self.action(
-            name=f"Pushing image: {new_name}",
-            commands=[[self.backend, "push", f"{image_name}:{tag}"] for tag in self.tags + extra_tags],
-            post=True,
-        )
-
-    def pull_image(self, name: str) -> None:
-        """Pulls an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds)
-
-        Args:
-            name (str): image name to pull.
-        """
-        self.action(
-            name=f"Pulling image: {name}",
-            commands=[[self.backend, "pull", name]],
-            post=False,
-        )
+        return 0, b""
 
     def run(self) -> int:
-        """After adding all steps. This method will start to issue all commands. It stops when done or a command fails.
+        """Run queue actions and action groups. Stops when done or a command fails.
 
         Returns:
             int: return code. On success this will be zero. Otherwise it will be the return code of the failed command.
         """
-        for queue in [self._actions, self._post]:
-            for action in queue:
-                print(action.name, flush=True)
+        for queue in [self.actions_main, reversed(self.actions_post)]:
+            for item in queue:
+                if isinstance(item, Action):
+                    returncode, stdout = self.run_action(item)
+                elif isinstance(item, ActionGroup):
+                    returncode, stdout = self.run_action_group(item)
+                else:
+                    raise ValueError(f"Unexpected queue entry: {item} of type {type(item)}")
 
-                for command in action.commands:
-                    if self.verbose:
-                        print(f"{command}", flush=True)
+                if returncode != 0:
+                    print("Encountered error running:", flush=True)
 
-                    returncode, stdout = self._run_cmd(command)
+                    if not self.verbose:
+                        print(stdout.decode(), flush=True)
 
-                    if returncode != 0:
-                        print("Encountered error running:", flush=True)
-
-                        if not self.verbose:
-                            print(stdout.decode(), flush=True)
-
-                        return returncode
+                    return returncode
 
         return 0

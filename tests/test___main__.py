@@ -21,7 +21,7 @@ import builderer.__main__
         (
             [
                 "--registry",
-                "reg.examle.com:6789",
+                "reg.example.com:6789",
                 "--prefix",
                 "user",
                 "--tags",
@@ -39,7 +39,7 @@ import builderer.__main__
             ],
             "test.yaml",
             {
-                "registry": "reg.examle.com:6789",
+                "registry": "reg.example.com:6789",
                 "prefix": "user",
                 "tags": ["foo", "bar", "baz"],
                 "push": False,

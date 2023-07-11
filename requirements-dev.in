@@ -2,6 +2,7 @@ black
 build
 bump2version
 flake8
+flake8-docstrings
 markdown_include
 mdx_truly_sane_lists
 mkdocs-material

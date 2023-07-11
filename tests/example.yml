@@ -4,10 +4,11 @@ parameters:
   push: false
   cache: false
   verbose: false
-  tags: 
+  tags:
     - a
     - b
   simulate: true
   backend: podman
+  max_parallel: 4
 
 steps: []
