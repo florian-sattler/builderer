@@ -60,7 +60,7 @@ def test_load_example_workspace(datadir: pathlib.Path) -> None:
             {
                 "type": "pull_images",
                 "names": ["docker.io/python:alpine", "docker.io/nginx:alpine"],
-                "num_parallel": 1,
+                "num_parallel": 4,
             },
             {
                 "type": "forward_image",

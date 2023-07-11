@@ -15,7 +15,7 @@ def empty_builderer() -> Builderer:
 def test_empty_builderer(empty_builderer: Builderer) -> None:
     assert empty_builderer.simulate is False
     assert empty_builderer.verbose is False
-    assert empty_builderer.max_parallel == 1
+    assert empty_builderer.max_parallel is None
 
 
 @pytest.fixture

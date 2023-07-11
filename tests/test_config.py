@@ -336,7 +336,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                 ],
             ),
         ],
-        num_parallel=1,
+        num_parallel=4,
     )
     if push is False:
         assert post is None
@@ -360,7 +360,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                     ],
                 ),
             ],
-            num_parallel=1,
+            num_parallel=4,
         )
 
     assert observed_factory.calls == [
@@ -413,7 +413,7 @@ def test_pull_images(observed_factory: CallObserver) -> None:
                 [["docker", "pull", "second"]],
             ),
         ],
-        num_parallel=1,
+        num_parallel=4,
     )
     assert empty is None
 
