@@ -14,7 +14,7 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
     parser = argparse.ArgumentParser(
         prog="builderer",
         description="Building and pushing containers. \n\nCommand line arguments take precedence over file configuration which in turn takes precedence over default values",
-        epilog="This program is intended to run locally and inside ci/cd jobs.",
+        epilog="This program is intended to run locally as well as inside ci/cd jobs.",
     )
 
     parser.add_argument("--registry", type=str, default=None, help=docs.arg_registry_desc)

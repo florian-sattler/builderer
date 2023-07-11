@@ -37,4 +37,5 @@ Note that because `simulate=True` was passed, no commands got issued.
 
 ## Reference
 
+::: builderer.actions
 ::: builderer.builderer

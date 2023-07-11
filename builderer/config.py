@@ -56,7 +56,7 @@ class BuildImages(StepBase):
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel)
+    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
 
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
         main = []
@@ -107,7 +107,7 @@ class ForwardImages(StepBase):
     type: typing.Literal["forward_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_forward_names)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel)
+    num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
         main = []
@@ -140,7 +140,7 @@ class PullImage(StepBase):
 class PullImages(StepBase):
     type: typing.Literal["pull_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_pull_names)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel)
+    num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, None]:
         return builderer.ActionGroup([factory.pull_image(name=name) for name in self.names], self.num_parallel), None
@@ -148,7 +148,7 @@ class PullImages(StepBase):
 
 class Group(StepBase):
     type: typing.Literal["group"] = pydantic.Field(description=docs.step_type)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel)
+    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
     steps: list[Action | BuildImage | ExtractFromImage | ForwardImage | PullImage] = pydantic.Field(
         description=docs.conf_steps
     )
@@ -224,5 +224,5 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
 
     @staticmethod
     def load(path: str | pathlib.Path) -> "BuildererConfig":
-        with open(path, "rt") as f:
+        with open(path) as f:
             return BuildererConfig.parse_obj(yaml.safe_load(f))

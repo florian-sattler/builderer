@@ -31,6 +31,9 @@
           },
           {
             "$ref": "#/definitions/PullImages"
+          },
+          {
+            "$ref": "#/definitions/Group"
           }
         ]
       }
@@ -185,6 +188,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel execution. Defaults to 1",
+          "default": 1,
+          "type": "integer"
         }
       },
       "required": [
@@ -296,6 +305,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel execution. Defaults to 1",
+          "default": 1,
+          "type": "integer"
         }
       },
       "required": [
@@ -347,11 +362,66 @@
           "items": {
             "type": "string"
           }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel execution. Defaults to 1",
+          "default": 1,
+          "type": "integer"
         }
       },
       "required": [
         "type",
         "names"
+      ],
+      "additionalProperties": false
+    },
+    "Group": {
+      "title": "Group",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "group"
+          ],
+          "type": "string"
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel execution. Defaults to 1",
+          "default": 1,
+          "type": "integer"
+        },
+        "steps": {
+          "title": "Steps",
+          "description": "List of steps to execute.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Action"
+              },
+              {
+                "$ref": "#/definitions/BuildImage"
+              },
+              {
+                "$ref": "#/definitions/ExtractFromImage"
+              },
+              {
+                "$ref": "#/definitions/ForwardImage"
+              },
+              {
+                "$ref": "#/definitions/PullImage"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "type",
+        "steps"
       ],
       "additionalProperties": false
     },
@@ -405,6 +475,11 @@
             "podman"
           ],
           "type": "string"
+        },
+        "max_parallel": {
+          "title": "Maximum number of parallel jobs",
+          "description": "Limit the maximum number of parallel jobs per step. By default the max_parallel arguments of the individual steps are used.",
+          "type": "integer"
         }
       },
       "additionalProperties": false

@@ -8,7 +8,7 @@
     <p>
         <em>Container based mono repo builder</em>
     </p>
-    <p> 
+    <p>
         <a href="https://pypi.python.org/pypi/builderer">
             <img src="https://img.shields.io/pypi/v/builderer.svg">
         </a>

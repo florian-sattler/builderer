@@ -8,7 +8,7 @@
     <p style="margin-top:0;">
         <em>Container based mono repo builder</em>
     </p>
-    <p> 
+    <p>
         <a href="https://pypi.python.org/pypi/builderer">
             <img src="https://img.shields.io/pypi/v/builderer.svg">
         </a>
@@ -35,13 +35,13 @@
 
 ## But why?
 
-_builderer_ let's you build your container stack the **same way** your build pipeline does so you won't get any suprises!
+_builderer_ let's you build your container stack the **same way** your build pipeline does so you won't get any surprises!
 
 !!! quote "Quote by the author"
 
     Do you need more than a builder? Try _builderer_!
 
-_builderer_ makes it easy to build images both on CI/CD plattforms as well as your local machine using the same configuation and build command.
+_builderer_ makes it easy to build images both on CI/CD platforms as well as your local machine using the same configuration and build command.
 <br>_(Running builder requires python and either docker or podman)_
 
 !!! tip

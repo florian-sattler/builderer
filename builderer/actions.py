@@ -1,4 +1,4 @@
-"""Builderers file config is a thin wrapper around this library."""
+"""Builderers file config is a thin wrapper around this module as well as the builderer module."""
 
 import dataclasses
 import os
@@ -9,12 +9,16 @@ import uuid
 
 @dataclasses.dataclass(frozen=True)
 class Action:
+    """A named sequence of commands."""
+
     name: str
     commands: list[list[str]]
 
 
 @dataclasses.dataclass
 class ActionGroup:
+    """A sequence of actions with many or may not be run in parallel."""
+
     actions: list[Action]
     num_parallel: int
 
@@ -32,7 +36,7 @@ class ActionFactory:
         tags: list[str] = ["latest"],
         backend: typing.Literal["docker", "podman"] = "docker",
     ) -> None:
-        """Factory to create build tasks.
+        """Create predefined or custom actions.
 
         Args:
             registry (str | None, optional): Registry URL. Defaults to None.
@@ -50,7 +54,7 @@ class ActionFactory:
         self.push = push
 
     def action(self, name: str, commands: list[list[str]]) -> Action:
-        """A generic action with multiple commands.
+        """Create a generic action with multiple commands.
 
         Hint: Use this mechanism if other commands aren't sufficient for your usecase.
 
@@ -137,7 +141,7 @@ class ActionFactory:
     def forward_image(
         self, name: str, *, new_name: str | None = None, extra_tags: list[str] | None = None
     ) -> tuple[Action, Action | None]:
-        """Pulls an image from a registry, retags it and pushes it using the new names.
+        """Pull an image from a registry, retag it and push it using the new names.
 
         Args:
             name (str): image name to pull
@@ -171,7 +175,7 @@ class ActionFactory:
         return action_main, action_post
 
     def pull_image(self, name: str) -> Action:
-        """Pulls an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds)
+        """Pull an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds).
 
         Args:
             name (str): image name to pull.

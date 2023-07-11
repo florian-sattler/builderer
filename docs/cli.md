@@ -11,8 +11,8 @@ A short description of all the command line argument may be printed printed usin
 $ builderer --help
 usage: builderer [-h] [--registry REGISTRY] [--prefix PREFIX]
                  [--tags TAGS [TAGS ...]] [--no-push] [--cache] [--verbose]
-                 [--simulate] [--backend {docker,podman}] [--config CONFIG]
-                 [--version]
+                 [--simulate] [--backend {docker,podman}]
+                 [--max-parallel MAX_PARALLEL] [--config CONFIG] [--version]
 
 Building and pushing containers. Command line arguments take precedence over
 file configuration which in turn takes precedence over default values
@@ -27,8 +27,8 @@ options:
                         example on docker hub this is used for the username.
                         Unset by default.
   --tags TAGS [TAGS ...]
-                        One or multiple tags to use for each image. Defaults to
-                        ['latest']
+                        One or multiple tags to use for each image. Defaults
+                        to ['latest']
   --no-push             Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
   --cache               Whether to allow using cached images. This is
@@ -38,11 +38,15 @@ options:
   --backend {docker,podman}
                         Overwrite the backend used to build, tag and pull
                         images. Defaults to 'docker'
+  --max-parallel MAX_PARALLEL
+                        Limit the maximum number of parallel jobs per step. By
+                        default the num_parallel argument of each individual
+                        step is used.
   --config CONFIG       Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
   --version             show program's version number and exit
 
-This program is intended to run locally and inside ci/cd jobs.
+This program is intended to run locally as well as inside ci/cd jobs.
 ```
 
 ## Details
@@ -105,7 +109,7 @@ Default: `latest`
 
 !!! TIP
 
-    This is a great place to use enviroment variables or other shell variables such as build id or the current date.
+    This is a great place to use environment variables or other shell variables such as build id or the current date.
 
     `builderer --tags "$(date --iso-8601)" "$BUILD_BUILDID" latest`
 
@@ -124,7 +128,7 @@ Show issued commands and their output.
 
 !!! INFO
 
-    If an build error occures and `--verbose` was **not** passed,
+    If an build error occurs and `--verbose` was **not** passed,
     the full output of the failed command will still be printed to standard out.
 
 ### `--simulate`
@@ -145,6 +149,20 @@ Default: `docker`
 
     ```
     builderer --backend podman
+    ```
+
+### `--max-parallel` `max_parallel`
+
+Limit the maximum number of parallel jobs per step. By
+default the num_parallel argument of each individual
+step is used.
+
+Default: No limit
+
+??? Example
+
+    ```
+    builderer --max-parallel 1
     ```
 
 ### `--config` `path/to/config.yml`
