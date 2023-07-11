@@ -1,0 +1,66 @@
+fail_fast: true
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=50"]
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-shebang-scripts-are-executable
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: file-contents-sorter
+        files: requirements-dev.in
+      - id: fix-byte-order-marker
+      - id: fix-encoding-pragma
+        args: ["--remove"]
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+      - id: trailing-whitespace
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    rev: "6.0.0"
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-alfred
+          - flake8-docstrings
+          - flake8-scream
+          - flake8-simplify
+          - flake8-useless-assert
+          - flake8-warnings
+        exclude: tests/|config.py|__
+  - repo: https://github.com/hadialqattan/pycln
+    rev: "v2.1.5"
+    hooks:
+      - id: pycln
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.16.0
+    hooks:
+      - id: typos
+  - repo: https://github.com/regebro/pyroma
+    rev: "4.2"
+    hooks:
+      - id: pyroma
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.9.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - "--py310-plus"
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.4.1"
+    hooks:
+      - id: mypy
+        additional_dependencies: [pydantic<2, types-PyYAML]
+        exclude: tests/example_workspace

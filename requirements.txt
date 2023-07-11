@@ -4,6 +4,12 @@
 #
 #    pip-compile --output-file=requirements.txt --resolver=backtracking requirements-dev.in setup.cfg
 #
+astor==0.8.1
+    # via
+    #   flake8-scream
+    #   flake8-simplify
+astroid==2.15.6
+    # via flake8-warnings
 black==23.7.0
     # via -r requirements-dev.in
 build==0.10.0
@@ -14,6 +20,8 @@ bump2version==1.0.1
     # via -r requirements-dev.in
 certifi==2023.5.7
     # via requests
+cfgv==3.3.1
+    # via pre-commit
 charset-normalizer==3.2.0
     # via requests
 click==8.1.4
@@ -27,18 +35,40 @@ colorama==0.4.6
     #   mkdocs-material
 coverage[toml]==7.2.7
     # via pytest-cov
+distlib==0.3.6
+    # via virtualenv
 exceptiongroup==1.1.2
     # via pytest
+filelock==3.12.2
+    # via virtualenv
 flake8==6.0.0
     # via
     #   -r requirements-dev.in
+    #   flake8-alfred
     #   flake8-docstrings
+    #   flake8-scream
+    #   flake8-simplify
+    #   flake8-useless-assert
+flake8-alfred==1.1.1
+    # via -r requirements-dev.in
 flake8-docstrings==1.7.0
+    # via -r requirements-dev.in
+flake8-scream==0.1.0
+    # via -r requirements-dev.in
+flake8-simplify==0.20.0
+    # via
+    #   -r requirements-dev.in
+    #   flake8-scream
+flake8-useless-assert==0.4.4
+    # via -r requirements-dev.in
+flake8-warnings==0.4.0
     # via -r requirements-dev.in
 ghp-import==2.1.0
     # via mkdocs
 griffe==0.31.0
     # via mkdocstrings-python
+identify==2.5.24
+    # via pre-commit
 idna==3.4
     # via requests
 iniconfig==2.0.0
@@ -48,6 +78,8 @@ jinja2==3.1.2
     #   mkdocs
     #   mkdocs-material
     #   mkdocstrings
+lazy-object-proxy==1.9.0
+    # via astroid
 markdown==3.3.7
     # via
     #   markdown-include
@@ -92,6 +124,8 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
+nodeenv==1.8.0
+    # via pre-commit
 packaging==23.1
     # via
     #   black
@@ -103,9 +137,13 @@ pathspec==0.11.1
 pip-tools==6.14.0
     # via -r requirements-dev.in
 platformdirs==3.8.1
-    # via black
+    # via
+    #   black
+    #   virtualenv
 pluggy==1.2.0
     # via pytest
+pre-commit==3.3.3
+    # via -r requirements-dev.in
 pycodestyle==2.10.0
     # via flake8
 pydantic==1.10.11
@@ -137,6 +175,7 @@ pyyaml==6.0
     # via
     #   builderer (setup.cfg)
     #   mkdocs
+    #   pre-commit
     #   pymdown-extensions
     #   pyyaml-env-tag
 pyyaml-env-tag==0.1
@@ -162,14 +201,19 @@ types-pyyaml==6.0.12.10
     # via -r requirements-dev.in
 typing-extensions==4.7.1
     # via
+    #   astroid
     #   mypy
     #   pydantic
 urllib3==2.0.3
     # via requests
+virtualenv==20.23.1
+    # via pre-commit
 watchdog==3.0.0
     # via mkdocs
 wheel==0.40.0
     # via pip-tools
+wrapt==1.15.0
+    # via astroid
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

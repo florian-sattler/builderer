@@ -2,7 +2,12 @@ black
 build
 bump2version
 flake8
+flake8-alfred
 flake8-docstrings
+flake8-scream
+flake8-simplify
+flake8-useless-assert
+flake8-warnings
 markdown_include
 mdx_truly_sane_lists
 mkdocs-material
@@ -10,6 +15,7 @@ mkdocstrings
 mkdocstrings-python
 mypy
 pip-tools
+pre-commit
 pytest
 pytest-cov
 pytest-mock

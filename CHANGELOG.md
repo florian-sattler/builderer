@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added step to forward multiple images.
+- Use [pre-commit](https://pre-commit.com/) to improve developer experience.
 - Implemented parallel execution of actions.
   This breaks backwards compatibility with `1.X` versions when used as a library.
   Config files are still compatible with the new execution engine, however some steps are now being executed in parallel:
