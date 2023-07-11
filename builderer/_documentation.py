@@ -24,7 +24,7 @@ arg_cli_config = "Path to %(prog)s yaml configuration file. Defaults to '.builde
 arg_cli_no_push = "Prevent pushing images in all steps."
 
 # just parameters
-conf_parameters = "Overwrite default parameters. Values set here will be overwritten by command line arguments."
+conf_parameters = "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."
 conf_steps = "List of steps to execute."
 
 # steps

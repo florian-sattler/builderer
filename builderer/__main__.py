@@ -1,3 +1,5 @@
+"""Console entrypoint for builderer both when running as a module as well as when started as a console script."""
+
 import argparse
 from typing import Any
 
@@ -11,6 +13,14 @@ from builderer.config import BuildererConfig
 
 
 def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
+    """Parse commandline arguments.
+
+    Args:
+        argv (list[str] | None, optional): List of command line arguments to parse. Defaults to sys.argv.
+
+    Returns:
+        tuple[str, dict[str, Any]]: Path to config and a dict of all remaining config options.
+    """
     parser = argparse.ArgumentParser(
         prog="builderer",
         description="Building and pushing containers. \n\nCommand line arguments take precedence over file configuration which in turn takes precedence over default values",
@@ -35,6 +45,14 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run builderer while optionally specifying which cli argument to use.
+
+    Args:
+        argv (list[str] | None, optional): List of command line arguments to parse. Defaults to sys.argv.
+
+    Returns:
+        int: exit code
+    """
     config_path, cli_args = parse_args(argv)
 
     try:
@@ -53,9 +71,6 @@ def main(argv: list[str] | None = None) -> int:
 
     for step in config.steps:
         runner.add_action_likes(*step.create(factory))
-
-    # print(runner.actions_main)
-    # print(runner.actions_post)
 
     return runner.run()
 

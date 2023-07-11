@@ -1,3 +1,5 @@
+"""builderer - Container based mono repo builder."""
+
 from builderer.builderer import Builderer
 from builderer.actions import Action, ActionFactory, ActionGroup
 

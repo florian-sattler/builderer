@@ -1,5 +1,7 @@
+"""File configuration for builderer."""
 import pathlib
 import typing
+import typing_extensions
 
 import pydantic
 import yaml
@@ -8,20 +10,35 @@ import builderer._documentation as docs
 import builderer
 
 
-class StepBase(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+class _StepBase(pydantic.BaseModel, extra=pydantic.Extra.forbid):
     def create(
         self, factory: builderer.ActionFactory
     ) -> tuple[builderer.Action | builderer.ActionGroup | None, builderer.Action | builderer.ActionGroup | None]:
         raise NotImplementedError()  # pragma: no cover
 
 
-class Action(StepBase):
+class Action(_StepBase):
+    """
+    A generic action with multiple commands.
+
+    Use this mechanism if other steps aren't sufficient for your usecase.
+    """
+
     type: typing.Literal["action"] = pydantic.Field(description=docs.step_type)
     name: str = pydantic.Field(description=docs.step_action_name)
     commands: list[list[str]] = pydantic.Field(description=docs.step_action_commands)
     post: bool = pydantic.Field(description=docs.step_action_post)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.Action | None, builderer.Action | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.Action | None, builderer.Action | None]: Resulting Actions (main and post)
+        """
         action = factory.action(name=self.name, commands=self.commands)
 
         if self.post:
@@ -30,7 +47,9 @@ class Action(StepBase):
         return action, None
 
 
-class BuildImage(StepBase):
+class BuildImage(_StepBase):
+    """Build a docker image and push it to the registry."""
+
     type: typing.Literal["build_image"] = pydantic.Field(description=docs.step_type)
     directory: str = pydantic.Field(description=docs.step_build_directory)
     dockerfile: str | None = pydantic.Field(default=None, description=docs.step_build_dockerfile)
@@ -39,7 +58,16 @@ class BuildImage(StepBase):
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.Action, builderer.Action | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.Action, builderer.Action | None]: Resulting Actions (main and post)
+        """
         return factory.build_image(
             directory=self.directory,
             dockerfile=self.dockerfile,
@@ -50,7 +78,9 @@ class BuildImage(StepBase):
         )
 
 
-class BuildImages(StepBase):
+class BuildImages(_StepBase):
+    """Build multiple docker images and push them to the registry."""
+
     type: typing.Literal["build_images"] = pydantic.Field(description=docs.step_type)
     directories: list[str] = pydantic.Field(description=docs.step_build_directories)
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
@@ -58,7 +88,16 @@ class BuildImages(StepBase):
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
     num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.ActionGroup, builderer.ActionGroup | None]: Resulting ActionGroups (main and post)
+        """
         main = []
         post = []
 
@@ -79,23 +118,45 @@ class BuildImages(StepBase):
         )
 
 
-class ExtractFromImage(StepBase):
+class ExtractFromImage(_StepBase):
+    """Copy a file from within a docker image."""
+
     type: typing.Literal["extract_from_image"] = pydantic.Field(description=docs.step_type)
     image: str = pydantic.Field(description=docs.step_extract_image)
     path: str = pydantic.Field(description=docs.step_extract_path)
     dest: list[str] = pydantic.Field(description=docs.step_extract_dest)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.Action, None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.Action, None]: Resulting Actions (main and post)
+        """
         return factory.extract_from_image(self.image, self.path, *self.dest), None
 
 
-class ForwardImage(StepBase):
+class ForwardImage(_StepBase):
+    """Pull an image from a registry, retag it and push it maybe using new names."""
+
     type: typing.Literal["forward_image"] = pydantic.Field(description=docs.step_type)
     name: str = pydantic.Field(description=docs.step_forward_name)
     new_name: str | None = pydantic.Field(default=None, description=docs.step_forward_new_name)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.Action, builderer.Action | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.Action, builderer.Action | None]: Resulting Actions (main and post)
+        """
         return factory.forward_image(
             name=self.name,
             new_name=self.new_name,
@@ -103,13 +164,24 @@ class ForwardImage(StepBase):
         )
 
 
-class ForwardImages(StepBase):
+class ForwardImages(_StepBase):
+    """Pull images, retag and push them."""
+
     type: typing.Literal["forward_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_forward_names)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
     num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.ActionGroup, builderer.ActionGroup | None]: Resulting ActionGroups (main and post)
+        """
         main = []
         post = []
 
@@ -129,33 +201,74 @@ class ForwardImages(StepBase):
         )
 
 
-class PullImage(StepBase):
+class PullImage(_StepBase):
+    """
+    Pull an image from a registry.
+
+    This might be usefull to ensure a local image is up to date (e.g. for local builds).
+    """
+
     type: typing.Literal["pull_image"] = pydantic.Field(description=docs.step_type)
     name: str = pydantic.Field(description=docs.step_pull_name)
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.Action, None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.Action, None]: Resulting Actions (main and post)
+        """
         return factory.pull_image(name=self.name), None
 
 
-class PullImages(StepBase):
+class PullImages(_StepBase):
+    """
+    Pull images from a registry.
+
+    This might be usefull to ensure local images are up to date (e.g. for local builds).
+    """
+
     type: typing.Literal["pull_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_pull_names)
     num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
+    @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.ActionGroup, None]: Resulting ActionGroups (main and post)
+        """
         return builderer.ActionGroup([factory.pull_image(name=name) for name in self.names], self.num_parallel), None
 
 
-class Group(StepBase):
+class Group(_StepBase):
+    """A group of actions which might be run in parallel."""
+
     type: typing.Literal["group"] = pydantic.Field(description=docs.step_type)
     num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
     steps: list[Action | BuildImage | ExtractFromImage | ForwardImage | PullImage] = pydantic.Field(
         description=docs.conf_steps
     )
 
+    @typing_extensions.override
     def create(
         self, factory: builderer.ActionFactory
     ) -> tuple[builderer.ActionGroup | None, builderer.ActionGroup | None]:
+        """Create action(s) from this step using a given factory.
+
+        Args:
+            factory (builderer.ActionFactory): Factory used to create this step.
+
+        Returns:
+            tuple[builderer.ActionGroup, builderer.ActionGroup | None]: Resulting ActionGroups (main and post)
+        """
         actions_main: list[builderer.Action] = []
         actions_post: list[builderer.Action] = []
 
@@ -171,8 +284,27 @@ class Group(StepBase):
             builderer.ActionGroup(actions_post[::-1], self.num_parallel) if actions_post else None,
         )
 
+    @pydantic.validator("steps", pre=True, each_item=True)
+    def parse_steps_by_type(cls, v: typing.Any) -> typing.Any:
+        """Make sure steps are parsed correctly."""
+        if not isinstance(v, dict):
+            return v
+
+        if "type" not in v:
+            raise ValueError("malformed step: 'type' is required!")
+
+        class_name = "".join(x.title() for x in v["type"].split("_"))
+
+        for step_type in cls.__fields__["steps"].type_.__args__:
+            if class_name == step_type.__name__:
+                return step_type.parse_obj(v)
+
+        raise ValueError(f"Unknown step type {v['type']}")
+
 
 class Parameters(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+    """Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."""
+
     registry: str | None = pydantic.Field(None, title=docs.arg_registry_title, description=docs.arg_registry_desc)
     prefix: str | None = pydantic.Field(None, title=docs.arg_prefix_title, description=docs.arg_prefix_desc)
     push: bool | None = pydantic.Field(None, title=docs.arg_push_title, description=docs.arg_push_desc)
@@ -189,6 +321,8 @@ class Parameters(pydantic.BaseModel, extra=pydantic.Extra.forbid):
 
 
 class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+    """builderer configuration."""
+
     steps: list[
         Action
         | BuildImage
@@ -208,6 +342,7 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
 
     @pydantic.validator("steps", pre=True, each_item=True)
     def parse_steps_by_type(cls, v: typing.Any) -> typing.Any:
+        """Make sure steps are parsed correctly."""
         if not isinstance(v, dict):
             return v
 
@@ -224,5 +359,13 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
 
     @staticmethod
     def load(path: str | pathlib.Path) -> "BuildererConfig":
+        """Load builderer configuration file.
+
+        Args:
+            path (str | pathlib.Path): file to read
+
+        Returns:
+            BuildererConfig: Loaded configuration.
+        """
         with open(path) as f:
             return BuildererConfig.parse_obj(yaml.safe_load(f))
