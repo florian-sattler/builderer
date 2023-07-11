@@ -1,0 +1,499 @@
+{
+  "title": "BuildererConfig",
+  "description": "builderer configuration.",
+  "type": "object",
+  "properties": {
+    "steps": {
+      "title": "Steps",
+      "description": "List of steps to execute.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Action"
+          },
+          {
+            "$ref": "#/definitions/BuildImage"
+          },
+          {
+            "$ref": "#/definitions/BuildImages"
+          },
+          {
+            "$ref": "#/definitions/ExtractFromImage"
+          },
+          {
+            "$ref": "#/definitions/ForwardImage"
+          },
+          {
+            "$ref": "#/definitions/ForwardImages"
+          },
+          {
+            "$ref": "#/definitions/Group"
+          },
+          {
+            "$ref": "#/definitions/PullImage"
+          },
+          {
+            "$ref": "#/definitions/PullImages"
+          }
+        ]
+      }
+    },
+    "parameters": {
+      "title": "Parameters",
+      "description": "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Parameters"
+        }
+      ]
+    }
+  },
+  "required": [
+    "steps"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Action": {
+      "title": "Action",
+      "description": "A generic action with multiple commands.\n\nUse this mechanism if other steps aren't sufficient for your usecase.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "action"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "description": "Name printed before running the action",
+          "type": "string"
+        },
+        "commands": {
+          "title": "Commands",
+          "description": "List of commands. Each command is a list of strings: the executable followed by arguments.",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "post": {
+          "title": "Post",
+          "description": "Whether to add the action to the post queue",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "commands",
+        "post"
+      ],
+      "additionalProperties": false
+    },
+    "BuildImage": {
+      "title": "BuildImage",
+      "description": "Build a docker image and push it to the registry.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "build_image"
+          ],
+          "type": "string"
+        },
+        "directory": {
+          "title": "Directory",
+          "description": "Directory containing the Dockerfile. This is also used as the build context.",
+          "type": "string"
+        },
+        "dockerfile": {
+          "title": "Dockerfile",
+          "description": "Path to Dockerfile. Name of the resulting image. Defaults to <directory>/Dockerfile.",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "description": "Name of the resulting image. Defaults to the name of the Dockerfiles parent directory.",
+          "type": "string"
+        },
+        "push": {
+          "title": "Push",
+          "description": "Whether to push the image. Defaults to True.",
+          "default": true,
+          "type": "boolean"
+        },
+        "qualified": {
+          "title": "Qualified",
+          "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
+          "default": true,
+          "type": "boolean"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "directory"
+      ],
+      "additionalProperties": false
+    },
+    "BuildImages": {
+      "title": "BuildImages",
+      "description": "Build multiple docker images and push them to the registry.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "build_images"
+          ],
+          "type": "string"
+        },
+        "directories": {
+          "title": "Directories",
+          "description": "Directories containing each containing Dockerfile.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "push": {
+          "title": "Push",
+          "description": "Whether to push the image. Defaults to True.",
+          "default": true,
+          "type": "boolean"
+        },
+        "qualified": {
+          "title": "Qualified",
+          "description": "Whether to add the registry path and prefix to the image name. Defaults to True.",
+          "default": true,
+          "type": "boolean"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 1",
+          "default": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "directories"
+      ],
+      "additionalProperties": false
+    },
+    "ExtractFromImage": {
+      "title": "ExtractFromImage",
+      "description": "Copy a file from within a docker image.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "extract_from_image"
+          ],
+          "type": "string"
+        },
+        "image": {
+          "title": "Image",
+          "description": "Name of the image to copy from.",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "description": "Source path inside the image.",
+          "type": "string"
+        },
+        "dest": {
+          "title": "Dest",
+          "description": "Destination paths. The file will be copied to all destinations individually.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "image",
+        "path",
+        "dest"
+      ],
+      "additionalProperties": false
+    },
+    "ForwardImage": {
+      "title": "ForwardImage",
+      "description": "Pull an image from a registry, retag it and push it maybe using new names.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "forward_image"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "description": "Image name to forward.",
+          "type": "string"
+        },
+        "new_name": {
+          "title": "New Name",
+          "description": "Set a new name for the image. By default the basename of the pulled image without the tag is used.",
+          "type": "string"
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "ForwardImages": {
+      "title": "ForwardImages",
+      "description": "Pull images, retag and push them.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "forward_images"
+          ],
+          "type": "string"
+        },
+        "names": {
+          "title": "Names",
+          "description": "Image names to forward.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extra_tags": {
+          "title": "Extra Tags",
+          "description": "Additional tags to use in this step. Defaults to None.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 4",
+          "default": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "names"
+      ],
+      "additionalProperties": false
+    },
+    "PullImage": {
+      "title": "PullImage",
+      "description": "Pull an image from a registry.\n\nThis might be usefull to ensure a local image is up to date (e.g. for local builds).",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "pull_image"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "description": "Image name to pull.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "Group": {
+      "title": "Group",
+      "description": "A group of actions which might be run in parallel.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "group"
+          ],
+          "type": "string"
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to {}",
+          "default": 1,
+          "type": "integer"
+        },
+        "steps": {
+          "title": "Steps",
+          "description": "List of steps to execute.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Action"
+              },
+              {
+                "$ref": "#/definitions/BuildImage"
+              },
+              {
+                "$ref": "#/definitions/ExtractFromImage"
+              },
+              {
+                "$ref": "#/definitions/ForwardImage"
+              },
+              {
+                "$ref": "#/definitions/PullImage"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "type",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "PullImages": {
+      "title": "PullImages",
+      "description": "Pull images from a registry.\n\nThis might be usefull to ensure local images are up to date (e.g. for local builds).",
+      "type": "object",
+      "properties": {
+        "type": {
+          "title": "Type",
+          "description": "Type of the step",
+          "enum": [
+            "pull_images"
+          ],
+          "type": "string"
+        },
+        "names": {
+          "title": "Names",
+          "description": "Image names to pull.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "num_parallel": {
+          "title": "Num Parallel",
+          "description": "Number of parallel executions. Defaults to 4",
+          "default": 4,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "names"
+      ],
+      "additionalProperties": false
+    },
+    "Parameters": {
+      "title": "Parameters",
+      "description": "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments.",
+      "type": "object",
+      "properties": {
+        "registry": {
+          "title": "Registry URL",
+          "description": "Set the registry url. You may include a port using the colon notation (example.com:3000/). This is needed when using a non standard port. Unset by default.",
+          "type": "string"
+        },
+        "prefix": {
+          "title": "Registry directory",
+          "description": "Set the directory for all images. This is the image component between registry url and image name. For example on docker hub this is used for the username. Unset by default.",
+          "type": "string"
+        },
+        "push": {
+          "title": "Allow pushing images",
+          "description": "Whether to allow pushing images.",
+          "type": "boolean"
+        },
+        "cache": {
+          "title": "Allow caching images",
+          "description": "Whether to allow using cached images. This is especially usefull for local builds.",
+          "type": "boolean"
+        },
+        "verbose": {
+          "title": "Verbose output",
+          "description": "Show issued commands and their live output.",
+          "type": "boolean"
+        },
+        "tags": {
+          "title": "Tags to use",
+          "description": "One or multiple tags to use for each image. Defaults to ['latest']",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "simulate": {
+          "title": "Simulate execution",
+          "description": "Prevent issuing any commands just do the printing.",
+          "type": "boolean"
+        },
+        "backend": {
+          "title": "Build Backend",
+          "description": "Overwrite the backend used to build, tag and pull images. Defaults to 'docker'",
+          "enum": [
+            "docker",
+            "podman"
+          ],
+          "type": "string"
+        },
+        "max_parallel": {
+          "title": "Maximum number of parallel jobs",
+          "description": "Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used.",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
