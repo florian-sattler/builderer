@@ -29,7 +29,7 @@ conf_steps = "List of steps to execute."
 
 # steps
 step_type = "Type of the step"
-step_num_parallel_tmpl = "Number of parallel execution. Defaults to {}"
+step_num_parallel_tmpl = "Number of parallel executions. Defaults to {}"
 
 step_action_name = "Name printed before running the action"
 step_action_commands = "List of commands. Each command is a list of strings: the executable followed by arguments."

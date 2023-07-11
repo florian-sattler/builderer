@@ -86,7 +86,7 @@ class BuildImages(_StepBase):
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
+    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl.format(1))
 
     @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
@@ -280,7 +280,7 @@ class Group(_StepBase):
                 actions_post.append(post)
 
         return (
-            builderer.ActionGroup(actions_main, self.num_parallel) if actions_post else None,
+            builderer.ActionGroup(actions_main, self.num_parallel) if actions_main else None,
             builderer.ActionGroup(actions_post[::-1], self.num_parallel) if actions_post else None,
         )
 
@@ -330,9 +330,9 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
         | ExtractFromImage
         | ForwardImage
         | ForwardImages
+        | Group
         | PullImage
         | PullImages
-        | Group
     ] = pydantic.Field(description=docs.conf_steps)
 
     parameters: Parameters = pydantic.Field(
