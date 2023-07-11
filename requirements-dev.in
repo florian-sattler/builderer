@@ -10,6 +10,7 @@ mkdocstrings
 mkdocstrings-python
 mypy
 pip-tools
+pre-commit
 pytest
 pytest-cov
 pytest-mock
