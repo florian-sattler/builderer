@@ -47,7 +47,7 @@ def test_action(observed_factory: CallObserver, post: bool) -> None:
     assert observed_factory.calls == [
         (
             "action",
-            tuple(),
+            (),
             {"name": "example", "commands": [["command"], ["second", "--command", "foo"]]},
         )
     ]
@@ -62,7 +62,7 @@ def test_build_image(observed_factory: CallObserver, push: bool) -> None:
         name="custom-name",
         push=push,
         qualified=False,
-        extra_tags=["additional_tag1", "extrac-2"],
+        extra_tags=["additional_tag1", "extract-2"],
     )
     main, post = tester.create(observed_factory)  # type: ignore
 
@@ -77,7 +77,7 @@ def test_build_image(observed_factory: CallObserver, push: bool) -> None:
                 "-t",
                 "custom-name:additional_tag1",
                 "-t",
-                "custom-name:extrac-2",
+                "custom-name:extract-2",
                 "--no-cache",
                 "-f",
                 "some/docker/file",
@@ -94,21 +94,21 @@ def test_build_image(observed_factory: CallObserver, push: bool) -> None:
             [
                 ["docker", "push", "custom-name:latest"],
                 ["docker", "push", "custom-name:additional_tag1"],
-                ["docker", "push", "custom-name:extrac-2"],
+                ["docker", "push", "custom-name:extract-2"],
             ],
         )
 
     assert observed_factory.calls == [
         (
             "build_image",
-            tuple(),
+            (),
             {
                 "directory": "some folder",
                 "dockerfile": "some/docker/file",
                 "name": "custom-name",
                 "push": push,
                 "qualified": False,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         )
     ]
@@ -121,7 +121,7 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
         directories=["folder1", "folder2"],
         push=push,
         qualified=False,
-        extra_tags=["additional_tag1", "extrac-2"],
+        extra_tags=["additional_tag1", "extract-2"],
     )
     # TODO check all results in here
     # TODO prevent illegal parallel inputs
@@ -140,7 +140,7 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
                         "-t",
                         "folder1:additional_tag1",
                         "-t",
-                        "folder1:extrac-2",
+                        "folder1:extract-2",
                         "--no-cache",
                         "-f",
                         "folder1/Dockerfile",
@@ -159,7 +159,7 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
                         "-t",
                         "folder2:additional_tag1",
                         "-t",
-                        "folder2:extrac-2",
+                        "folder2:extract-2",
                         "--no-cache",
                         "-f",
                         "folder2/Dockerfile",
@@ -181,7 +181,7 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
                     [
                         ["docker", "push", "folder2:latest"],
                         ["docker", "push", "folder2:additional_tag1"],
-                        ["docker", "push", "folder2:extrac-2"],
+                        ["docker", "push", "folder2:extract-2"],
                     ],
                 ),
                 builderer.Action(
@@ -189,7 +189,7 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
                     [
                         ["docker", "push", "folder1:latest"],
                         ["docker", "push", "folder1:additional_tag1"],
-                        ["docker", "push", "folder1:extrac-2"],
+                        ["docker", "push", "folder1:extract-2"],
                     ],
                 ),
             ],
@@ -199,22 +199,22 @@ def test_build_images(observed_factory: CallObserver, push: bool) -> None:
     assert observed_factory.calls == [
         (
             "build_image",
-            tuple(),
+            (),
             {
                 "directory": "folder1",
                 "push": push,
                 "qualified": False,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         ),
         (
             "build_image",
-            tuple(),
+            (),
             {
                 "directory": "folder2",
                 "push": push,
                 "qualified": False,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         ),
     ]
@@ -267,7 +267,7 @@ def test_forward_image(observed_factory: CallObserver, push: bool) -> None:
         type="forward_image",
         name="image-name:3.14-alpine3.18",
         new_name="something-else",
-        extra_tags=["additional_tag1", "extrac-2"],
+        extra_tags=["additional_tag1", "extract-2"],
     )
 
     main, post = tester.create(observed_factory)  # type: ignore
@@ -278,7 +278,7 @@ def test_forward_image(observed_factory: CallObserver, push: bool) -> None:
             ["docker", "pull", "image-name:3.14-alpine3.18"],
             ["docker", "tag", "image-name:3.14-alpine3.18", "something-else:latest"],
             ["docker", "tag", "image-name:3.14-alpine3.18", "something-else:additional_tag1"],
-            ["docker", "tag", "image-name:3.14-alpine3.18", "something-else:extrac-2"],
+            ["docker", "tag", "image-name:3.14-alpine3.18", "something-else:extract-2"],
         ],
     )
 
@@ -290,18 +290,18 @@ def test_forward_image(observed_factory: CallObserver, push: bool) -> None:
             [
                 ["docker", "push", "something-else:latest"],
                 ["docker", "push", "something-else:additional_tag1"],
-                ["docker", "push", "something-else:extrac-2"],
+                ["docker", "push", "something-else:extract-2"],
             ],
         )
 
     assert observed_factory.calls == [
         (
             "forward_image",
-            tuple(),
+            (),
             {
                 "name": "image-name:3.14-alpine3.18",
                 "new_name": "something-else",
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         )
     ]
@@ -311,7 +311,7 @@ def test_forward_image(observed_factory: CallObserver, push: bool) -> None:
 def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
     observed_factory.observed.push = push
     tester = builderer.config.ForwardImages(
-        type="forward_images", names=["image-name", "image-name-2"], extra_tags=["additional_tag1", "extrac-2"]
+        type="forward_images", names=["image-name", "image-name-2"], extra_tags=["additional_tag1", "extract-2"]
     )
     main, post = tester.create(observed_factory)  # type: ignore
 
@@ -323,7 +323,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                     ["docker", "pull", "image-name"],
                     ["docker", "tag", "image-name", "image-name:latest"],
                     ["docker", "tag", "image-name", "image-name:additional_tag1"],
-                    ["docker", "tag", "image-name", "image-name:extrac-2"],
+                    ["docker", "tag", "image-name", "image-name:extract-2"],
                 ],
             ),
             builderer.Action(
@@ -332,7 +332,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                     ["docker", "pull", "image-name-2"],
                     ["docker", "tag", "image-name-2", "image-name-2:latest"],
                     ["docker", "tag", "image-name-2", "image-name-2:additional_tag1"],
-                    ["docker", "tag", "image-name-2", "image-name-2:extrac-2"],
+                    ["docker", "tag", "image-name-2", "image-name-2:extract-2"],
                 ],
             ),
         ],
@@ -348,7 +348,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                     [
                         ["docker", "push", "image-name-2:latest"],
                         ["docker", "push", "image-name-2:additional_tag1"],
-                        ["docker", "push", "image-name-2:extrac-2"],
+                        ["docker", "push", "image-name-2:extract-2"],
                     ],
                 ),
                 builderer.Action(
@@ -356,7 +356,7 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
                     [
                         ["docker", "push", "image-name:latest"],
                         ["docker", "push", "image-name:additional_tag1"],
-                        ["docker", "push", "image-name:extrac-2"],
+                        ["docker", "push", "image-name:extract-2"],
                     ],
                 ),
             ],
@@ -366,20 +366,20 @@ def test_forward_images(observed_factory: CallObserver, push: bool) -> None:
     assert observed_factory.calls == [
         (
             "forward_image",
-            tuple(),
+            (),
             {
                 "name": "image-name",
                 "new_name": None,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         ),
         (
             "forward_image",
-            tuple(),
+            (),
             {
                 "name": "image-name-2",
                 "new_name": None,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         ),
     ]
@@ -395,7 +395,7 @@ def test_pull_image(observed_factory: CallObserver) -> None:
     )
     assert empty is None
 
-    assert observed_factory.calls == [("pull_image", tuple(), {"name": "some-image-name"})]
+    assert observed_factory.calls == [("pull_image", (), {"name": "some-image-name"})]
 
 
 def test_pull_images(observed_factory: CallObserver) -> None:
@@ -418,8 +418,8 @@ def test_pull_images(observed_factory: CallObserver) -> None:
     assert empty is None
 
     assert observed_factory.calls == [
-        ("pull_image", tuple(), {"name": "some-image-name"}),
-        ("pull_image", tuple(), {"name": "second"}),
+        ("pull_image", (), {"name": "some-image-name"}),
+        ("pull_image", (), {"name": "second"}),
     ]
 
 
@@ -446,7 +446,7 @@ def test_group(observed_factory: CallObserver) -> None:
                 name="custom-name",
                 push=True,
                 qualified=False,
-                extra_tags=["additional_tag1", "extrac-2"],
+                extra_tags=["additional_tag1", "extract-2"],
             ),
         ],
     )
@@ -469,7 +469,7 @@ def test_group(observed_factory: CallObserver) -> None:
                         "-t",
                         "custom-name:additional_tag1",
                         "-t",
-                        "custom-name:extrac-2",
+                        "custom-name:extract-2",
                         "--no-cache",
                         "-f",
                         "some/docker/file",
@@ -488,7 +488,7 @@ def test_group(observed_factory: CallObserver) -> None:
                 [
                     ["docker", "push", "custom-name:latest"],
                     ["docker", "push", "custom-name:additional_tag1"],
-                    ["docker", "push", "custom-name:extrac-2"],
+                    ["docker", "push", "custom-name:extract-2"],
                 ],
             )
         ],
@@ -498,19 +498,19 @@ def test_group(observed_factory: CallObserver) -> None:
     assert observed_factory.calls == [
         (
             "pull_image",
-            tuple(),
+            (),
             {"name": "some-image-name"},
         ),
         (
             "build_image",
-            tuple(),
+            (),
             {
                 "directory": "some folder",
                 "dockerfile": "some/docker/file",
                 "name": "custom-name",
                 "push": True,
                 "qualified": False,
-                "extra_tags": ["additional_tag1", "extrac-2"],
+                "extra_tags": ["additional_tag1", "extract-2"],
             },
         ),
     ]
@@ -525,7 +525,7 @@ def test_group(observed_factory: CallObserver) -> None:
         ({"steps": [{"type": "unknown"}]}, ValueError, ["'value_error'", "Unknown step type unknown"]),
     ],
 )
-def test_builderer_config_errors(data: typing.Any, error: typing.Type[Exception], error_texts: list[str]) -> None:
+def test_builderer_config_errors(data: typing.Any, error: type[Exception], error_texts: list[str]) -> None:
     with pytest.raises(error) as e:
         builderer.config.BuildererConfig.parse_obj(data)
 
