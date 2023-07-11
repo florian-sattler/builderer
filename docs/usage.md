@@ -107,6 +107,7 @@ Each step may be one of
 - [ExtractFromImage](#extractfromimage)
 - [ForwardImage](#forwardimage)
 - [ForwardImages](#forwardimages)
+- [Group](#group)
 - [PullImage](#pullimage)
 - [PullImages](#pullimages)
 
