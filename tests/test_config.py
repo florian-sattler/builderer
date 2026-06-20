@@ -516,6 +516,23 @@ def test_group(observed_factory: CallObserver) -> None:
     ]
 
 
+def test_group_post_only_step(observed_factory: CallObserver) -> None:
+    # An action with post=True yields (None, action), so the group has no main
+    # action and only a post group (exercises the falsy-main branch).
+    tester = builderer.config.Group(
+        type="group",
+        num_parallel=1,
+        steps=[builderer.config.Action(type="action", name="cleanup", commands=[["echo", "bye"]], post=True)],
+    )
+    main, post = tester.create(observed_factory)  # type: ignore
+
+    assert main is None
+    assert post == builderer.ActionGroup(
+        [builderer.Action("cleanup", [["echo", "bye"]])],
+        num_parallel=1,
+    )
+
+
 @pytest.mark.parametrize(
     ("data", "error", "error_texts"),
     [
@@ -531,3 +548,62 @@ def test_builderer_config_errors(data: typing.Any, error: type[Exception], error
 
     for text in error_texts:
         assert text in str(e)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"steps": [], "bogus": 1},  # extra field at top level
+        {"steps": [], "parameters": {"bogus": 1}},  # extra field in parameters
+        {"steps": [{"type": "pull_image", "name": "x", "bogus": 1}]},  # extra field in a step
+    ],
+)
+def test_config_extra_fields_forbidden(data: typing.Any) -> None:
+    with pytest.raises(pydantic.ValidationError) as e:
+        builderer.config.BuildererConfig.model_validate(data)
+
+    assert "Extra inputs are not permitted" in str(e.value)
+
+
+def test_config_nested_group_rejected() -> None:
+    # Group.steps deliberately excludes Group, so a group nested in a group is
+    # not a valid step type and must be rejected.
+    data = {"steps": [{"type": "group", "steps": [{"type": "group", "steps": []}]}]}
+
+    with pytest.raises(pydantic.ValidationError) as e:
+        builderer.config.BuildererConfig.model_validate(data)
+
+    assert "Unknown step type group" in str(e.value)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"steps": 5},  # top-level steps not a list
+        {"steps": [{"type": "group", "steps": 5}]},  # group steps not a list
+    ],
+)
+def test_config_steps_not_a_list(data: typing.Any) -> None:
+    with pytest.raises(pydantic.ValidationError) as e:
+        builderer.config.BuildererConfig.model_validate(data)
+
+    assert "Input should be a valid list" in str(e.value)
+
+
+@pytest.mark.parametrize(
+    ("nested", "expected_text"),
+    [
+        ([{}], "malformed step: 'type' is required!"),
+        ([{"type": "unknown"}], "Unknown step type unknown"),
+        ([1], "Input should be a valid dictionary"),
+    ],
+)
+def test_group_config_errors(nested: typing.Any, expected_text: str) -> None:
+    # The step-type validator on Group must enforce the same rules as the
+    # top-level one for the steps nested inside a group.
+    data = {"steps": [{"type": "group", "steps": nested}]}
+
+    with pytest.raises(pydantic.ValidationError) as e:
+        builderer.config.BuildererConfig.model_validate(data)
+
+    assert expected_text in str(e.value)

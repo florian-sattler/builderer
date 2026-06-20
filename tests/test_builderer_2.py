@@ -1,5 +1,6 @@
 import sys
 import threading
+import time
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -215,3 +216,33 @@ def test_run_failure(builderer: Builderer, action_group_success_invalid: ActionG
     builderer.add_action_likes(main=action_group_success_invalid, post=None)
     returncode = builderer.run()
     assert returncode != 0
+
+
+def test_max_parallel_caps_concurrency() -> None:
+    # A group asking for more parallelism than max_parallel must be capped: no
+    # more than max_parallel actions may run at the same time.
+    runner = Builderer(max_parallel=2)
+
+    lock = threading.Lock()
+    current = 0
+    peak = 0
+
+    def tracking_action(_self: Builderer, action: Action) -> tuple[int, bytes]:
+        nonlocal current, peak
+        with lock:
+            current += 1
+            peak = max(peak, current)
+        time.sleep(0.02)  # hold the slot so concurrent actions overlap
+        with lock:
+            current -= 1
+        return 0, b""
+
+    actions = [Action(name=f"Action {i}", commands=[]) for i in range(6)]
+    group = ActionGroup(actions=actions, num_parallel=6)  # wants 6, capped to 2
+
+    with patch.object(Builderer, "run_action", tracking_action):
+        returncode, stdout = runner.run_action_group(group)
+
+    assert returncode == 0
+    assert stdout == b""
+    assert peak == 2

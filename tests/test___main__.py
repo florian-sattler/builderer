@@ -204,3 +204,55 @@ def test_main_run_unknown_workspace(tmp_path: pathlib.Path, capsys: pytest.Captu
     assert return_code == 1
     assert captured.err == ""
     assert "No such file or directory:" in captured.out
+
+
+def test_main_invalid_config(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    # A config that loads but fails validation must be handled like a missing
+    # file: print the error and return 1 (the pydantic.ValidationError branch).
+    config = tmp_path / ".builderer.yml"
+    config.write_text("steps:\n  - type: nonsense\n")
+
+    return_code = builderer.__main__.main(["--config", str(config)])
+    captured = capsys.readouterr()
+
+    assert return_code == 1
+    assert captured.err == ""
+    assert "Unknown step type nonsense" in captured.out
+
+
+def test_main_cli_overrides_file_parameters(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str], mocker: MockerFixture
+) -> None:
+    # The file sets registry/prefix/backend/tags; the CLI overrides a subset.
+    # CLI must win over the file, the file must win over defaults, and file-only
+    # parameters (prefix, tags) must still reach the factory.
+    config = tmp_path / ".builderer.yml"
+    config.write_text(
+        "parameters:\n"
+        "  registry: file-reg.example.com\n"
+        "  prefix: fileprefix\n"
+        "  backend: docker\n"
+        "  tags:\n"
+        "    - filetag\n"
+        "steps:\n"
+        "  - type: build_image\n"
+        "    directory: svc\n"
+    )
+
+    run_patch = mocker.patch("subprocess.run", return_value=subprocess.CompletedProcess([], 0))
+
+    arguments = ["--config", str(config), "--verbose", "--registry", "cli-reg.example.com", "--backend", "podman"]
+    return_code = builderer.__main__.main(arguments)
+    captured = capsys.readouterr()
+
+    assert return_code == 0
+    assert captured.err == ""
+
+    image = "cli-reg.example.com/fileprefix/svc:filetag"  # cli registry + file prefix/tag
+    expected_calls = [
+        call(["podman", "build", "-t", image, "--no-cache", "-f", "svc/Dockerfile", "svc"]),  # cli backend
+        call(["podman", "push", image]),
+    ]
+
+    assert run_patch.call_count == len(expected_calls)
+    run_patch.assert_has_calls(expected_calls, any_order=False)
