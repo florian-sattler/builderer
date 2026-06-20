@@ -632,3 +632,81 @@ def test_parameters_max_parallel_rejects_invalid(value: typing.Any) -> None:
     # max_parallel is a global cap, so it has no "all" keyword.
     with pytest.raises(pydantic.ValidationError):
         builderer.config.Parameters(max_parallel=value)
+
+
+# --- step selection (--skip / --only) ---
+
+_SELECTION_CONFIG = {
+    "steps": [
+        {"type": "pull_image", "id": "redis", "name": "redis"},
+        {"type": "pull_image", "id": "nginx", "name": "nginx"},
+        {
+            "type": "group",
+            "id": "builds",
+            "steps": [
+                {"type": "pull_image", "id": "a", "name": "img-a"},
+                {"type": "pull_image", "id": "b", "name": "img-b"},
+            ],
+        },
+    ]
+}
+
+
+def _selected_ids(steps: list[typing.Any]) -> list[str | None]:
+    """Flatten selected steps to their ids, expanding groups to their surviving sub-steps."""
+    result: list[str | None] = []
+    for step in steps:
+        result.append(step.id)
+        if isinstance(step, builderer.config.Group):
+            result.extend(sub.id for sub in step.steps)
+    return result
+
+
+@pytest.mark.parametrize(
+    ("only", "skip", "expected"),
+    [
+        (set(), set(), ["redis", "nginx", "builds", "a", "b"]),  # no filter -> everything
+        (set(), {"nginx"}, ["redis", "builds", "a", "b"]),  # skip a top-level leaf
+        (set(), {"builds"}, ["redis", "nginx"]),  # skip a whole group by its id
+        (set(), {"a", "b"}, ["redis", "nginx"]),  # group emptied by skips -> dropped
+        ({"a"}, set(), ["builds", "a"]),  # only a nested step -> pulled out of its group
+        ({"builds"}, set(), ["builds", "a", "b"]),  # only a whole group
+        ({"redis"}, set(), ["redis"]),  # only a top-level leaf
+        ({"builds"}, {"b"}, ["builds", "a"]),  # group selected, one sub-step skipped
+    ],
+)
+def test_select_steps(only: set[str], skip: set[str], expected: list[str]) -> None:
+    config = builderer.config.BuildererConfig.model_validate(_SELECTION_CONFIG)
+    selected = builderer.config.select_steps(config.steps, only=only, skip=skip)
+    assert _selected_ids(selected) == expected
+
+
+def test_step_ids_includes_nested() -> None:
+    config = builderer.config.BuildererConfig.model_validate(_SELECTION_CONFIG)
+    assert config.step_ids == {"redis", "nginx", "builds", "a", "b"}
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        # duplicate ids at the top level
+        {"steps": [{"type": "pull_image", "id": "x", "name": "a"}, {"type": "pull_image", "id": "x", "name": "b"}]},
+        # duplicate id between a top-level step and a step nested in a group
+        {
+            "steps": [
+                {"type": "pull_image", "id": "x", "name": "a"},
+                {"type": "group", "id": "g", "steps": [{"type": "pull_image", "id": "x", "name": "b"}]},
+            ]
+        },
+    ],
+)
+def test_duplicate_step_ids_rejected(data: typing.Any) -> None:
+    with pytest.raises(pydantic.ValidationError) as e:
+        builderer.config.BuildererConfig.model_validate(data)
+
+    assert "duplicate step id" in str(e.value)
+
+
+def test_empty_step_id_rejected() -> None:
+    with pytest.raises(pydantic.ValidationError):
+        builderer.config.PullImage(type="pull_image", id="", name="x")

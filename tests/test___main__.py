@@ -151,6 +151,54 @@ def test_parse_args_max_parallel_invalid(value: str) -> None:
         builderer.__main__.parse_args(["--max-parallel", value])
 
 
+def test_parse_args_skip_only_repeatable() -> None:
+    _, args = builderer.__main__.parse_args(["--skip", "a", "--skip", "b", "--only", "c"])
+    assert args["skip"] == ["a", "b"]
+    assert args["only"] == ["c"]
+
+
+def _write_selection_config(path: pathlib.Path) -> None:
+    path.write_text(
+        "steps:\n" "  - {type: pull_image, id: redis, name: redis}\n" "  - {type: pull_image, id: nginx, name: nginx}\n"
+    )
+
+
+def test_main_skip_filters_steps(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    config = tmp_path / ".builderer.yml"
+    _write_selection_config(config)
+
+    return_code = builderer.__main__.main(["--config", str(config), "--simulate", "--skip", "nginx"])
+    captured = capsys.readouterr()
+
+    assert return_code == 0
+    assert "Pulling image: redis" in captured.out
+    assert "nginx" not in captured.out
+
+
+def test_main_only_filters_steps(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    config = tmp_path / ".builderer.yml"
+    _write_selection_config(config)
+
+    return_code = builderer.__main__.main(["--config", str(config), "--simulate", "--only", "nginx"])
+    captured = capsys.readouterr()
+
+    assert return_code == 0
+    assert "Pulling image: nginx" in captured.out
+    assert "redis" not in captured.out
+
+
+def test_main_unknown_step_id(tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    config = tmp_path / ".builderer.yml"
+    _write_selection_config(config)
+
+    return_code = builderer.__main__.main(["--config", str(config), "--simulate", "--skip", "ghost"])
+    captured = capsys.readouterr()
+
+    assert return_code == 1
+    assert captured.err == ""
+    assert "Unknown step id(s): ghost" in captured.out
+
+
 @pytest.mark.parametrize(
     ("flag", "pattern"),
     [

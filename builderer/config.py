@@ -40,6 +40,8 @@ def _step_candidates(model: type[pydantic.BaseModel], field: str) -> tuple[type[
 class _StepBase(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(extra="forbid")
 
+    id: str | None = pydantic.Field(default=None, min_length=1, description=docs.step_id)
+
     def create(
         self, factory: builderer.ActionFactory
     ) -> tuple[builderer.Action | builderer.ActionGroup | None, builderer.Action | builderer.ActionGroup | None]:
@@ -324,6 +326,56 @@ class Group(_StepBase):
         return [_parse_step_by_type(candidates, item) for item in v]
 
 
+def _collect_step_ids(steps: typing.Sequence[_StepBase]) -> list[str]:
+    """Collect every step id, recursing into groups."""
+    ids: list[str] = []
+    for step in steps:
+        if step.id is not None:
+            ids.append(step.id)
+        if isinstance(step, Group):
+            ids.extend(_collect_step_ids(step.steps))
+    return ids
+
+
+def select_steps(
+    steps: typing.Sequence[_StepBase],
+    *,
+    only: typing.AbstractSet[str],
+    skip: typing.AbstractSet[str],
+    _ancestor_selected: bool = False,
+) -> list[_StepBase]:
+    """Filter steps by their id according to ``--only`` / ``--skip`` selection.
+
+    A step is kept when it is selected (no ``only`` is given, its id is in ``only``, or an
+    enclosing group is selected) and its id is not in ``skip``. ``skip`` takes precedence over
+    ``only``. Groups are returned as copies holding only their surviving sub-steps.
+
+    Args:
+        steps: The steps to filter.
+        only: Ids to run exclusively. An empty set means "run everything".
+        skip: Ids to skip.
+
+    Returns:
+        list: The steps to run, with groups pruned to their surviving sub-steps.
+    """
+    selected: list[_StepBase] = []
+
+    for step in steps:
+        if step.id is not None and step.id in skip:
+            continue
+
+        active = not only or _ancestor_selected or (step.id is not None and step.id in only)
+
+        if isinstance(step, Group):
+            substeps = select_steps(step.steps, only=only, skip=skip, _ancestor_selected=active)
+            if substeps:
+                selected.append(step.model_copy(update={"steps": substeps}))
+        elif active:
+            selected.append(step)
+
+    return selected
+
+
 class Parameters(pydantic.BaseModel):
     """Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."""
 
@@ -375,6 +427,20 @@ class BuildererConfig(pydantic.BaseModel):
 
         candidates = _step_candidates(cls, "steps")
         return [_parse_step_by_type(candidates, item) for item in v]
+
+    @pydantic.model_validator(mode="after")
+    def _validate_unique_ids(self) -> "BuildererConfig":
+        """Ensure step ids are unique so --skip / --only are unambiguous."""
+        ids = _collect_step_ids(self.steps)
+        duplicates = sorted({step_id for step_id in ids if ids.count(step_id) > 1})
+        if duplicates:
+            raise ValueError(f"duplicate step id(s): {', '.join(duplicates)}")
+        return self
+
+    @property
+    def step_ids(self) -> set[str]:
+        """All step ids defined in this config, including steps nested in groups."""
+        return set(_collect_step_ids(self.steps))
 
     @staticmethod
     def load(path: str | pathlib.Path) -> "BuildererConfig":

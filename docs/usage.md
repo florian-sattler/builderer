@@ -111,12 +111,21 @@ Each step may be one of
 - [PullImage](#pullimage)
 - [PullImages](#pullimages)
 
+Every step additionally accepts an optional `id` (string). Give a step an `id` to select it from
+the [command line](cli.md) with `--skip` / `--only`. Ids must be unique across the whole config,
+including steps nested in a [group](#group).
+
 ??? Example
 
     ```yaml
     steps:
       - type: build_image
+        id: frontend-image
         directory: frontend
+
+    # then, on the command line:
+    #   builderer --skip frontend-image
+    #   builderer --only frontend-image
     ```
 
 #### Action

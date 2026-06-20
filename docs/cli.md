@@ -12,7 +12,8 @@ $ builderer --help
 usage: builderer [-h] [--registry REGISTRY] [--prefix PREFIX]
                  [--tags TAGS [TAGS ...]] [--no-push] [--cache] [--verbose]
                  [--simulate] [--backend {docker,podman}]
-                 [--max-parallel MAX_PARALLEL] [--config CONFIG] [--version]
+                 [--max-parallel MAX_PARALLEL] [--skip ID] [--only ID]
+                 [--config CONFIG] [--version]
 
 Building and pushing containers. Command line arguments take precedence over
 file configuration which in turn takes precedence over default values
@@ -43,6 +44,10 @@ options:
                         Accepts a positive integer or 'cores' (number of CPU
                         cores). By default the num_parallel argument of each
                         individual step is used.
+  --skip ID             Skip the step with the given id. May be passed
+                        multiple times. Takes precedence over --only.
+  --only ID             Run only the step with the given id (and the steps of
+                        a group named this way). May be passed multiple times.
   --config CONFIG       Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
   --version             show program's version number and exit
@@ -166,6 +171,26 @@ Default: No limit
     ```
     builderer --max-parallel 1
     builderer --max-parallel cores
+    ```
+
+### `--skip` `id` <br>`--only` `id`
+
+Select which steps to run by their [`id`](usage.md#steps). Both may be passed multiple times.
+
+- `--skip` removes the step(s) with the given id from the run.
+- `--only` runs just the step(s) with the given id. Naming a group runs the whole group; naming a
+  step nested in a group runs only that step.
+
+A step runs when it is selected by `--only` (or no `--only` is given) and not removed by `--skip`.
+`--skip` takes precedence over `--only`. Referencing an unknown id is an error.
+
+Default: run every step.
+
+??? Example
+
+    ```
+    builderer --skip integration-tests
+    builderer --only frontend --only backend
     ```
 
 ### `--config` `path/to/config.yml`

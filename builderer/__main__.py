@@ -9,7 +9,7 @@ import builderer._documentation as docs
 from builderer import __version__
 from builderer.actions import ActionFactory
 from builderer.builderer import Builderer
-from builderer.config import BuildererConfig
+from builderer.config import BuildererConfig, select_steps
 
 
 def _max_parallel(value: str) -> int | str:
@@ -47,6 +47,8 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
     parser.add_argument("--simulate", action="store_true", default=None, help=docs.arg_simulate_desc)
     parser.add_argument("--backend", choices=["docker", "podman"], help=docs.arg_backend_desc)
     parser.add_argument("--max-parallel", type=_max_parallel, default=None, help=docs.arg_max_parallel_desc)
+    parser.add_argument("--skip", action="append", default=None, metavar="ID", help=docs.arg_skip_desc)
+    parser.add_argument("--only", action="append", default=None, metavar="ID", help=docs.arg_only_desc)
     parser.add_argument("--config", type=str, default=".builderer.yml", help=docs.arg_cli_config)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
@@ -66,10 +68,19 @@ def main(argv: list[str] | None = None) -> int:
     """
     config_path, cli_args = parse_args(argv)
 
+    # --skip / --only select which steps run; they are not factory/runner parameters.
+    skip = set(cli_args.pop("skip", None) or [])
+    only = set(cli_args.pop("only", None) or [])
+
     try:
         config = BuildererConfig.load(config_path)
     except (FileNotFoundError, pydantic.ValidationError) as e:
         print(e)
+        return 1
+
+    unknown = (skip | only) - config.step_ids
+    if unknown:
+        print(f"Unknown step id(s): {', '.join(sorted(unknown))}")
         return 1
 
     builderer_args = config.parameters.model_dump(exclude_none=True) | cli_args
@@ -80,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     factory = ActionFactory(**factory_args)
     runner = Builderer(**runner_args)
 
-    for step in config.steps:
+    for step in select_steps(config.steps, only=only, skip=skip):
         runner.add_action_likes(*step.create(factory))
 
     try:
