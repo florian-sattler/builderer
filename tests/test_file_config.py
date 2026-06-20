@@ -6,7 +6,7 @@ import builderer.config
 def test_load_minimal(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildererConfig.load(datadir / "minimal.yml")
 
-    assert file_config.dict() == {
+    assert file_config.model_dump() == {
         "steps": [],
         "parameters": {
             "registry": None,
@@ -25,7 +25,7 @@ def test_load_minimal(datadir: pathlib.Path) -> None:
 def test_load_example(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildererConfig.load(datadir / "example.yml")
 
-    assert file_config.dict() == {
+    assert file_config.model_dump() == {
         "parameters": {
             "registry": "registry.example.com:12345",
             "prefix": "username",
@@ -44,7 +44,7 @@ def test_load_example(datadir: pathlib.Path) -> None:
 def test_load_example_workspace(datadir: pathlib.Path) -> None:
     file_config = builderer.config.BuildererConfig.load(datadir / "example_workspace" / ".builderer.yml")
 
-    assert file_config.dict() == {
+    assert file_config.model_dump() == {
         "parameters": {
             "registry": "registry.example.com",
             "prefix": "foo",

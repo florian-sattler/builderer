@@ -61,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
         print(e)
         return 1
 
-    builderer_args = config.parameters.dict(exclude_none=True) | cli_args
+    builderer_args = config.parameters.model_dump(exclude_none=True) | cli_args
 
     factory_args = {k: v for k, v in builderer_args.items() if k not in {"verbose", "simulate", "max_parallel"}}
     runner_args = {k: v for k, v in builderer_args.items() if k in {"verbose", "simulate", "max_parallel"}}

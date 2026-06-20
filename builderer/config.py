@@ -11,7 +11,32 @@ import builderer._documentation as docs
 import builderer
 
 
-class _StepBase(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+def _parse_step_by_type(candidates: tuple[type[pydantic.BaseModel], ...], v: typing.Any) -> typing.Any:
+    """Parse a single step dict into the matching step model based on its ``type``."""
+    if not isinstance(v, dict):
+        return v
+
+    if "type" not in v:
+        raise ValueError("malformed step: 'type' is required!")
+
+    class_name = "".join(x.title() for x in v["type"].split("_"))
+
+    for step_type in candidates:
+        if class_name == step_type.__name__:
+            return step_type.model_validate(v)
+
+    raise ValueError(f"Unknown step type {v['type']}")
+
+
+def _step_candidates(model: type[pydantic.BaseModel], field: str) -> tuple[type[pydantic.BaseModel], ...]:
+    """Return the step model types that make up the union of a ``list[...]`` field."""
+    (union,) = typing.get_args(model.model_fields[field].annotation)
+    return typing.get_args(union)
+
+
+class _StepBase(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(extra="forbid")
+
     def create(
         self, factory: builderer.ActionFactory
     ) -> tuple[builderer.Action | builderer.ActionGroup | None, builderer.Action | builderer.ActionGroup | None]:
@@ -206,7 +231,7 @@ class PullImage(_StepBase):
     """
     Pull an image from a registry.
 
-    This might be usefull to ensure a local image is up to date (e.g. for local builds).
+    This might be useful to ensure a local image is up to date (e.g. for local builds).
     """
 
     type: typing.Literal["pull_image"] = pydantic.Field(description=docs.step_type)
@@ -229,7 +254,7 @@ class PullImages(_StepBase):
     """
     Pull images from a registry.
 
-    This might be usefull to ensure local images are up to date (e.g. for local builds).
+    This might be useful to ensure local images are up to date (e.g. for local builds).
     """
 
     type: typing.Literal["pull_images"] = pydantic.Field(description=docs.step_type)
@@ -285,26 +310,21 @@ class Group(_StepBase):
             builderer.ActionGroup(actions_post[::-1], self.num_parallel) if actions_post else None,
         )
 
-    @pydantic.validator("steps", pre=True, each_item=True)
+    @pydantic.field_validator("steps", mode="before")
+    @classmethod
     def parse_steps_by_type(cls, v: typing.Any) -> typing.Any:
         """Make sure steps are parsed correctly."""
-        if not isinstance(v, dict):
+        if not isinstance(v, list):
             return v
 
-        if "type" not in v:
-            raise ValueError("malformed step: 'type' is required!")
-
-        class_name = "".join(x.title() for x in v["type"].split("_"))
-
-        for step_type in cls.__fields__["steps"].type_.__args__:
-            if class_name == step_type.__name__:
-                return step_type.parse_obj(v)
-
-        raise ValueError(f"Unknown step type {v['type']}")
+        candidates = _step_candidates(cls, "steps")
+        return [_parse_step_by_type(candidates, item) for item in v]
 
 
-class Parameters(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+class Parameters(pydantic.BaseModel):
     """Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."""
+
+    model_config = pydantic.ConfigDict(extra="forbid")
 
     registry: str | None = pydantic.Field(None, title=docs.arg_registry_title, description=docs.arg_registry_desc)
     prefix: str | None = pydantic.Field(None, title=docs.arg_prefix_title, description=docs.arg_prefix_desc)
@@ -321,8 +341,10 @@ class Parameters(pydantic.BaseModel, extra=pydantic.Extra.forbid):
     )
 
 
-class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
+class BuildererConfig(pydantic.BaseModel):
     """builderer configuration."""
+
+    model_config = pydantic.ConfigDict(extra="forbid")
 
     steps: list[
         Action
@@ -341,22 +363,15 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
         description=docs.conf_parameters,
     )
 
-    @pydantic.validator("steps", pre=True, each_item=True)
+    @pydantic.field_validator("steps", mode="before")
+    @classmethod
     def parse_steps_by_type(cls, v: typing.Any) -> typing.Any:
         """Make sure steps are parsed correctly."""
-        if not isinstance(v, dict):
+        if not isinstance(v, list):
             return v
 
-        if "type" not in v:
-            raise ValueError("malformed step: 'type' is required!")
-
-        class_name = "".join(x.title() for x in v["type"].split("_"))
-
-        for step_type in cls.__fields__["steps"].type_.__args__:
-            if class_name == step_type.__name__:
-                return step_type.parse_obj(v)
-
-        raise ValueError(f"Unknown step type {v['type']}")
+        candidates = _step_candidates(cls, "steps")
+        return [_parse_step_by_type(candidates, item) for item in v]
 
     @staticmethod
     def load(path: str | pathlib.Path) -> "BuildererConfig":
@@ -369,4 +384,4 @@ class BuildererConfig(pydantic.BaseModel, extra=pydantic.Extra.forbid):
             BuildererConfig: Loaded configuration.
         """
         with open(path) as f:
-            return BuildererConfig.parse_obj(yaml.safe_load(f))
+            return BuildererConfig.model_validate(yaml.safe_load(f))
