@@ -4,8 +4,8 @@ This document describes the process of publishing a new version of `builderer`.
 
 1. Run the following command to update the schema:
 
-   ```
-   python -c 'import builderer.config; print(builderer.config.BuildererConfig.schema_json(indent=2))' > docs/schema.json
+   ```bash
+   python -c 'import json, builderer.config; print(json.dumps(builderer.config.BuildererConfig.model_json_schema(), indent=2))' > docs/schema.json
    ```
 
 1. If anything changed: Add notice to CHANGELOG.md and commit **both** files.
@@ -16,7 +16,7 @@ This document describes the process of publishing a new version of `builderer`.
 1. _Stage_ CHANGELOG.md
 1. Bump the version using one of:
 
-   ```
+   ```bash
    bump2version major --allow-dirty
    bump2version minor --allow-dirty
    bump2version patch --allow-dirty
@@ -24,7 +24,7 @@ This document describes the process of publishing a new version of `builderer`.
 
 1. Push Update
 
-   ```
+   ```bash
    git push
    git push --tags
    ```

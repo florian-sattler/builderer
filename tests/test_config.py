@@ -519,15 +519,15 @@ def test_group(observed_factory: CallObserver) -> None:
 @pytest.mark.parametrize(
     ("data", "error", "error_texts"),
     [
-        ({}, pydantic.ValidationError, ["value_error.missing", "'loc': ('steps'"]),
-        ({"steps": [{}]}, ValueError, ["'value_error'", "malformed step: 'type' is required!"]),
-        ({"steps": [1]}, pydantic.ValidationError, ["'type_error.dict'", "value is not a valid dict"]),
-        ({"steps": [{"type": "unknown"}]}, ValueError, ["'value_error'", "Unknown step type unknown"]),
+        ({}, pydantic.ValidationError, ["type=missing", "steps"]),
+        ({"steps": [{}]}, pydantic.ValidationError, ["type=value_error", "malformed step: 'type' is required!"]),
+        ({"steps": [1]}, pydantic.ValidationError, ["model_type", "Input should be a valid"]),
+        ({"steps": [{"type": "unknown"}]}, pydantic.ValidationError, ["type=value_error", "Unknown step type unknown"]),
     ],
 )
 def test_builderer_config_errors(data: typing.Any, error: type[Exception], error_texts: list[str]) -> None:
     with pytest.raises(error) as e:
-        builderer.config.BuildererConfig.parse_obj(data)
+        builderer.config.BuildererConfig.model_validate(data)
 
     for text in error_texts:
         assert text in str(e)

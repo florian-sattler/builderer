@@ -32,7 +32,7 @@ options:
   --no-push             Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
   --cache               Whether to allow using cached images. This is
-                        especially usefull for local builds.
+                        especially useful for local builds.
   --verbose             Show issued commands and their live output.
   --simulate            Prevent issuing any commands just do the printing.
   --backend {docker,podman}
@@ -120,7 +120,7 @@ Prevent pushing images in all steps.
 ### `--cache`
 
 Allow using cached images.
-This is especially usefull for local builds.
+This is especially useful for local builds.
 
 ### `--verbose`
 
@@ -137,7 +137,7 @@ Prevent issuing any commands just do the printing.
 
 !!! TIP
 
-    Using `--simulate` alongside `--verbose` might be usefull for debugging.
+    Using `--simulate` alongside `--verbose` might be useful for debugging.
 
 ### `--backend` `docker` or `podman`
 

@@ -73,7 +73,7 @@ This defines the config file, typically called `.builderer.yml`.
 | registry     | string               | No       | Set the registry url. You may include a port using the colon notation (example.com:3000/). This is needed when using a non standard port. Unset by default. |
 | prefix       | string               | No       | Set the directory for all images. This is the image component between registry url and image name. For example on docker hub this is used for the username. |
 | push         | boolean              | No       | Whether to allow pushing images.                                                                                                                            |
-| cache        | boolean              | No       | Whether to allow using cached images. This is especially usefull for local builds.                                                                          |
+| cache        | boolean              | No       | Whether to allow using cached images. This is especially useful for local builds.                                                                          |
 | verbose      | boolean              | No       | Show issued commands and their live output.                                                                                                                 |
 | tags         | array of string      | No       | One or multiple tags to use for each image. Defaults to ['latest']                                                                                          |
 | simulate     | boolean              | No       | Prevent issuing any commands just do the printing.                                                                                                          |

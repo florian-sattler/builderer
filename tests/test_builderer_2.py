@@ -1,4 +1,5 @@
 import sys
+import threading
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -153,12 +154,11 @@ def test_run_action_group_exception_mocked(
         assert mock_run_action.call_count == 2
 
 
-@pytest.mark.parametrize("num_parallel", [1, 2])
-def test_run_action_group_no_further_actions(num_parallel: int, builderer: Builderer) -> None:
+def test_run_action_group_no_further_actions(builderer: Builderer) -> None:
     action1 = Action(name="Action 1", commands=[["echo", "Hello"]])
     action2 = Action(name="Action 2", commands=[["false"]])
     action3 = Action(name="Action 3", commands=[["echo", "World"]])
-    group = ActionGroup(actions=[action1, action2, action3], num_parallel=num_parallel)
+    group = ActionGroup(actions=[action1, action2, action3], num_parallel=1)
 
     with patch.object(Builderer, "run_action") as mock_run_action:
         mock_run_action.side_effect = [(0, b""), (1, b"Error"), (0, b"")]
@@ -173,6 +173,36 @@ def test_run_action_group_no_further_actions(num_parallel: int, builderer: Build
         assert call(action2) in mock_run_action.mock_calls
 
         assert call(action3) not in mock_run_action.mock_calls
+
+
+def test_run_action_group_parallel_stops_on_error(builderer: Builderer) -> None:
+    # With parallel execution the exact set of actions that get started is
+    # scheduling dependent, so we cannot assert on individual actions. What is
+    # guaranteed is that a failure stops new actions from starting, meaning not
+    # all queued actions run. The barrier keeps the actions started alongside
+    # the failing one from freeing their worker until the failure is recorded,
+    # so the short-circuit is observed reliably regardless of thread timing.
+    actions = [Action(name=f"Action {i}", commands=[["echo", str(i)]]) for i in range(6)]
+    failing = actions[1]
+    group = ActionGroup(actions=actions, num_parallel=2)
+
+    failed = threading.Event()
+
+    def side_effect(action: Action) -> tuple[int, bytes]:
+        if action is failing:
+            failed.set()
+            return (1, b"Error")
+        failed.wait(timeout=5)
+        return (0, b"")
+
+    with patch.object(Builderer, "run_action", side_effect=side_effect) as mock_run_action:
+        returncode, stdout = builderer.run_action_group(group)
+
+        assert returncode == 1
+        assert stdout == b"Error"
+
+        assert call(failing) in mock_run_action.mock_calls
+        assert mock_run_action.call_count < len(actions)
 
 
 def test_run_success(builderer_sim: Builderer, action_group_success_success: ActionGroup) -> None:

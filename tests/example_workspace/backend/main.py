@@ -1,7 +1,6 @@
 import redis.asyncio as redis
 from fastapi import FastAPI
 
-
 app = FastAPI(root_path="/api/")
 db = redis.from_url("redis://database")
 

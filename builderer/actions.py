@@ -175,7 +175,7 @@ class ActionFactory:
         return action_main, action_post
 
     def pull_image(self, name: str) -> Action:
-        """Pull an image from a registry. This might be usefull to ensure a local image is up to date (e.g. for local builds).
+        """Pull an image from a registry. This might be useful to ensure a local image is up to date (e.g. for local builds).
 
         Args:
             name (str): image name to pull.
