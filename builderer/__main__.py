@@ -83,7 +83,11 @@ def main(argv: list[str] | None = None) -> int:
     for step in config.steps:
         runner.add_action_likes(*step.create(factory))
 
-    return runner.run()
+    try:
+        return runner.run()
+    except KeyboardInterrupt:
+        print("Aborted!")
+        return 130  # 128 + SIGINT(2), the conventional exit code for a Ctrl-C interrupt
 
 
 if __name__ == "__main__":
