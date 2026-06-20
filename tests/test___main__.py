@@ -1,13 +1,95 @@
+import os
 import pathlib
 import re
+import signal
 import subprocess
+import sys
+import time
 import typing
 from unittest.mock import call
 
 import pytest
 from pytest_mock import MockerFixture
 
+import builderer
 import builderer.__main__
+
+# Real Ctrl-C handling relies on POSIX signals / process groups.
+requires_posix = pytest.mark.skipif(os.name != "posix", reason="SIGINT process-group signalling requires POSIX")
+
+_REPO_ROOT = pathlib.Path(builderer.__file__).resolve().parent.parent
+
+
+def _run_until_interrupt(config: pathlib.Path) -> tuple[int, str]:
+    """Run `python -m builderer`, wait until the first action starts, then send a Ctrl-C.
+
+    The process is started in its own session so a SIGINT to its process group mimics what a
+    terminal does on Ctrl-C (the running child command is interrupted too).
+
+    Returns:
+        tuple[int, str]: the exit code and the combined stdout/stderr output.
+    """
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "builderer", "--config", str(config)],
+        cwd=_REPO_ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        start_new_session=True,
+    )
+    assert proc.stdout is not None
+
+    first_line = proc.stdout.readline()  # blocks until the first action prints (or EOF on early exit)
+    time.sleep(1)  # let the action's child command spawn into the group before interrupting
+    os.killpg(proc.pid, signal.SIGINT)
+
+    try:
+        rest = proc.communicate(timeout=10)[0]
+    except subprocess.TimeoutExpired:  # pragma: no cover - only hit if the abort handling regresses
+        proc.kill()
+        proc.communicate()
+        raise AssertionError("builderer did not exit promptly after SIGINT")
+
+    assert proc.returncode is not None
+    return proc.returncode, first_line + rest
+
+
+@requires_posix
+def test_sigint_aborts_gracefully(tmp_path: pathlib.Path) -> None:
+    # A Ctrl-C while a (main-thread) action runs exits cleanly: code 130, message, no traceback.
+    config = tmp_path / ".builderer.yml"
+    config.write_text(
+        'steps:\n  - type: action\n    name: long task\n    commands: [["sleep", "30"]]\n    post: false\n'
+    )
+
+    code, output = _run_until_interrupt(config)
+
+    assert code == 130
+    assert "Aborted!" in output
+    assert "Traceback" not in output
+
+
+@requires_posix
+def test_sigint_cancels_pending_group_actions(tmp_path: pathlib.Path) -> None:
+    # num_parallel=1 keeps the second action queued while the first runs. A Ctrl-C must cancel
+    # the queued action rather than letting it run while the executor shuts down.
+    config = tmp_path / ".builderer.yml"
+    config.write_text(
+        "steps:\n"
+        "  - type: group\n"
+        "    num_parallel: 1\n"
+        "    steps:\n"
+        '      - {type: action, name: started, commands: [["sleep", "30"]], post: false}\n'
+        '      - {type: action, name: cancelled, commands: [["sleep", "30"]], post: false}\n'
+    )
+
+    code, output = _run_until_interrupt(config)
+
+    assert code == 130
+    assert "Aborted!" in output
+    assert "started" in output  # the running action did start
+    assert "cancelled" not in output  # the queued action was cancelled, never run
+    assert "Traceback" not in output
 
 
 @pytest.mark.parametrize(
@@ -230,6 +312,21 @@ def test_main_invalid_config(tmp_path: pathlib.Path, capsys: pytest.CaptureFixtu
     assert return_code == 1
     assert captured.err == ""
     assert "Unknown step type nonsense" in captured.out
+
+
+def test_main_keyboard_interrupt(
+    datadir: pathlib.Path, capsys: pytest.CaptureFixture[str], mocker: MockerFixture
+) -> None:
+    # A Ctrl-C during execution must be handled gracefully: clean message, exit 130, no traceback.
+    mocker.patch("builderer.__main__.Builderer.run", side_effect=KeyboardInterrupt)
+    config = datadir / "example_workspace" / ".builderer.yml"
+
+    return_code = builderer.__main__.main(["--config", str(config), "--simulate"])
+    captured = capsys.readouterr()
+
+    assert return_code == 130
+    assert captured.err == ""
+    assert "Aborted!" in captured.out
 
 
 def test_main_cli_overrides_file_parameters(

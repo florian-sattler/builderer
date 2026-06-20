@@ -1,3 +1,4 @@
+import concurrent.futures
 import sys
 import threading
 import time
@@ -206,6 +207,20 @@ def test_run_action_group_parallel_stops_on_error(builderer: Builderer) -> None:
 
         assert call(failing) in mock_run_action.mock_calls
         assert mock_run_action.call_count < len(actions)
+
+
+def test_run_action_group_keyboard_interrupt(builderer_sim: Builderer, mocker: MockerFixture) -> None:
+    # A Ctrl-C while waiting for actions must shut the executor down (cancelling queued
+    # actions) and re-raise so the caller can abort, rather than letting queued actions
+    # drain during interpreter shutdown.
+    group = ActionGroup(actions=[Action("a", []), Action("b", [])], num_parallel=1)
+    shutdown_spy = mocker.spy(concurrent.futures.ThreadPoolExecutor, "shutdown")
+    mocker.patch("concurrent.futures.wait", side_effect=KeyboardInterrupt)
+
+    with pytest.raises(KeyboardInterrupt):
+        builderer_sim.run_action_group(group)
+
+    shutdown_spy.assert_called_once_with(mocker.ANY, wait=True, cancel_futures=True)
 
 
 def test_run_success(builderer_sim: Builderer, action_group_success_success: ActionGroup) -> None:

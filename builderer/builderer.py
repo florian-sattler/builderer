@@ -179,9 +179,17 @@ class Builderer:
 
         executor = concurrent.futures.ThreadPoolExecutor(self._num_workers(group))
 
-        fs = [executor.submit(run_in_context, action) for action in group.actions]
+        try:
+            fs = [executor.submit(run_in_context, action) for action in group.actions]
+            concurrent.futures.wait(fs, return_when=concurrent.futures.FIRST_EXCEPTION)
+        except KeyboardInterrupt:
+            # On Ctrl-C stop queued actions from starting and drop them, then let the
+            # interrupt propagate so the caller can abort. Without this the executor's
+            # worker threads would drain the remaining actions during interpreter shutdown.
+            evt.set()
+            executor.shutdown(wait=True, cancel_futures=True)
+            raise
 
-        concurrent.futures.wait(fs, return_when=concurrent.futures.FIRST_EXCEPTION)
         if evt.is_set():
             executor.shutdown(wait=True, cancel_futures=True)
             assert error_data is not None
