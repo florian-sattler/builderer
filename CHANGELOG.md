@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `cores` — use the number of available CPU cores.
   - `all` — run every action in the group in parallel (`num_parallel` only).
 
+- Steps may now declare an optional `id`. Use `--skip <id>` to exclude steps and `--only <id>` to run
+  just the named step(s) from the command line. Both flags may be repeated and work with steps nested
+  in a group (`--only` on a group runs the whole group). `--skip` takes precedence over `--only`.
+
 ### Fixed
 
 - Interrupting a run with `Ctrl-C` now aborts gracefully with exit code `130` instead of printing

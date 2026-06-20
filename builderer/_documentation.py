@@ -22,6 +22,10 @@ arg_max_parallel_desc = "Limit the maximum number of parallel jobs per step. Acc
 # just cli
 arg_cli_config = "Path to %(prog)s yaml configuration file. Defaults to '.builderer.yml'"
 arg_cli_no_push = "Prevent pushing images in all steps."
+arg_skip_desc = "Skip the step with the given id. May be passed multiple times. Takes precedence over --only."
+arg_only_desc = (
+    "Run only the step with the given id (and the steps of a group named this way). May be passed multiple times."
+)
 
 # just parameters
 conf_parameters = "Overwrite default parameters. Values set here will in turn be overwritten by command line arguments."
@@ -29,6 +33,7 @@ conf_steps = "List of steps to execute."
 
 # steps
 step_type = "Type of the step"
+step_id = "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line."
 step_num_parallel_tmpl = "Number of parallel executions. Accepts a positive integer, 'cores' (number of CPU cores) or 'all' (every action in the group). Defaults to {}"
 
 step_action_name = "Name printed before running the action"

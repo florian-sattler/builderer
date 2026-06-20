@@ -4,6 +4,20 @@
       "additionalProperties": false,
       "description": "A generic action with multiple commands.\n\nUse this mechanism if other steps aren't sufficient for your usecase.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "action",
           "description": "Type of the step",
@@ -45,6 +59,20 @@
       "additionalProperties": false,
       "description": "Build a docker image and push it to the registry.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "build_image",
           "description": "Type of the step",
@@ -122,6 +150,20 @@
       "additionalProperties": false,
       "description": "Build multiple docker images and push them to the registry.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "build_images",
           "description": "Type of the step",
@@ -194,6 +236,20 @@
       "additionalProperties": false,
       "description": "Copy a file from within a docker image.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "extract_from_image",
           "description": "Type of the step",
@@ -232,6 +288,20 @@
       "additionalProperties": false,
       "description": "Pull an image from a registry, retag it and push it maybe using new names.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "forward_image",
           "description": "Type of the step",
@@ -284,6 +354,20 @@
       "additionalProperties": false,
       "description": "Pull images, retag and push them.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "forward_images",
           "description": "Type of the step",
@@ -344,6 +428,20 @@
       "additionalProperties": false,
       "description": "A group of actions which might be run in parallel.",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "group",
           "description": "Type of the step",
@@ -541,6 +639,20 @@
       "additionalProperties": false,
       "description": "Pull an image from a registry.\n\nThis might be useful to ensure a local image is up to date (e.g. for local builds).",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "pull_image",
           "description": "Type of the step",
@@ -564,6 +676,20 @@
       "additionalProperties": false,
       "description": "Pull images from a registry.\n\nThis might be useful to ensure local images are up to date (e.g. for local builds).",
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional unique identifier for the step. Use it with --skip / --only to select steps on the command line.",
+          "title": "Id"
+        },
         "type": {
           "const": "pull_images",
           "description": "Type of the step",
