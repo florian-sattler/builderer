@@ -33,6 +33,16 @@
 
 _builderer_ builds docker based projects both in ci/cd and locally omitting endless configuration and the need to restart ci/cd pipelines to get a running build.
 
+## Features
+
+- **Build steps** – build, tag, push, pull and forward container images.
+- **Custom steps** – run arbitrary commands as build or post steps when the built-in steps aren't enough.
+- **Parallel execution** – run steps concurrently; `num_parallel` / `max_parallel` accept a number, `cores`, or `all`.
+- **Step selection** – give steps an `id` and choose what runs with `--skip` / `--only`.
+- **docker & podman** backends.
+- **Editor support** – a published JSON schema for `.builderer.yml`.
+- **CI- & local-friendly** – graceful `Ctrl-C`, `--simulate`, and `--verbose` output.
+
 ## Help
 
 See [documentation](https://builderer.florian-sattler.de) for help.
@@ -45,7 +55,7 @@ pip install builderer
 
 ## Example
 
-Create `.builderer.yml` a the root of your project:
+Create `.builderer.yml` at the root of your project:
 
 ```yaml
 steps:
