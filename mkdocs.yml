@@ -70,7 +70,6 @@ copyright: Copyright &copy; 2023 Florian Sattler
 plugins:
   - mkdocstrings:
       enabled: true
-      custom_templates: templates
       default_handler: python
       handlers:
         python:
