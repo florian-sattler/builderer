@@ -39,9 +39,10 @@ options:
                         Overwrite the backend used to build, tag and pull
                         images. Defaults to 'docker'
   --max-parallel MAX_PARALLEL
-                        Limit the maximum number of parallel jobs per step. By
-                        default the num_parallel argument of each individual
-                        step is used.
+                        Limit the maximum number of parallel jobs per step.
+                        Accepts a positive integer or 'cores' (number of CPU
+                        cores). By default the num_parallel argument of each
+                        individual step is used.
   --config CONFIG       Path to builderer yaml configuration file. Defaults to
                         '.builderer.yml'
   --version             show program's version number and exit
@@ -153,8 +154,9 @@ Default: `docker`
 
 ### `--max-parallel` `max_parallel`
 
-Limit the maximum number of parallel jobs per step. By
-default the num_parallel argument of each individual
+Limit the maximum number of parallel jobs per step.
+Accepts a positive integer or `cores` (number of CPU cores).
+By default the num_parallel argument of each individual
 step is used.
 
 Default: No limit
@@ -163,6 +165,7 @@ Default: No limit
 
     ```
     builderer --max-parallel 1
+    builderer --max-parallel cores
     ```
 
 ### `--config` `path/to/config.yml`

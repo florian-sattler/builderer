@@ -15,12 +15,16 @@ class Action:
     commands: list[list[str]]
 
 
+# Parallelism value: a positive integer, "cores" (CPU count) or "all" (every action in the group).
+NumParallel = int | typing.Literal["cores", "all"]
+
+
 @dataclasses.dataclass
 class ActionGroup:
     """A sequence of actions with many or may not be run in parallel."""
 
     actions: list[Action]
-    num_parallel: int
+    num_parallel: NumParallel
 
 
 class ActionFactory:

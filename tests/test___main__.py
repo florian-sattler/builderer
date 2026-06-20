@@ -57,6 +57,18 @@ def test_parse_args(input_args: list[str], expected_config: str, expected_args: 
     assert actual_args == expected_args
 
 
+@pytest.mark.parametrize(("value", "expected"), [("cores", "cores"), ("8", 8)])
+def test_parse_args_max_parallel(value: str, expected: typing.Any) -> None:
+    _, args = builderer.__main__.parse_args(["--max-parallel", value])
+    assert args["max_parallel"] == expected
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "all", "bogus"])
+def test_parse_args_max_parallel_invalid(value: str) -> None:
+    with pytest.raises(SystemExit):
+        builderer.__main__.parse_args(["--max-parallel", value])
+
+
 @pytest.mark.parametrize(
     ("flag", "pattern"),
     [

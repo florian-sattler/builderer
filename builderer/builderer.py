@@ -1,10 +1,17 @@
 """Builderers file config is a thin wrapper around this module as well as the action module."""
 
 import concurrent.futures
+import os
 import subprocess
 import threading
+import typing
 
 from builderer.actions import Action, ActionGroup
+
+
+def _cpu_count() -> int:
+    """Return the number of available CPU cores, falling back to 1 if it cannot be determined."""
+    return os.cpu_count() or 1
 
 
 class Builderer:
@@ -15,7 +22,7 @@ class Builderer:
         *,
         verbose: bool = False,
         simulate: bool = False,
-        max_parallel: int | None = None,
+        max_parallel: int | typing.Literal["cores"] | None = None,
     ) -> None:
         """Run commands inside in two queues. A action queue and a post queue.
 
@@ -27,10 +34,14 @@ class Builderer:
         Args:
             verbose (bool, optional): Verbose output. Defaults to False.
             simulate (bool, optional): Prevent issuing commands. Defaults to False.
-            max_parallel (int, optional): Limit the maximum number of parallel jobs per step. By default the num_parallel argument of each individual step is used.
+            max_parallel (int | "cores", optional): Limit the maximum number of parallel jobs per step. Pass "cores" to cap at the number of CPU cores. By default the num_parallel argument of each individual step is used.
         """
-        if max_parallel is not None and (not isinstance(max_parallel, int) or max_parallel < 1):
-            raise ValueError("if set max_parallel needs to be a positive integer!")
+        if (
+            max_parallel is not None
+            and max_parallel != "cores"
+            and (not isinstance(max_parallel, int) or max_parallel < 1)
+        ):
+            raise ValueError("if set max_parallel needs to be a positive integer or 'cores'!")
 
         self.simulate = simulate
         self.verbose = verbose
@@ -38,6 +49,21 @@ class Builderer:
 
         self.actions_main: list[Action | ActionGroup] = []
         self.actions_post: list[Action | ActionGroup] = []
+
+    def _num_workers(self, group: ActionGroup) -> int:
+        """Resolve a group's num_parallel (and the global max_parallel cap) to a concrete worker count."""
+        if group.num_parallel == "cores":
+            workers = _cpu_count()
+        elif group.num_parallel == "all":
+            workers = len(group.actions)
+        else:
+            workers = group.num_parallel
+
+        if self.max_parallel is not None:
+            cap = _cpu_count() if self.max_parallel == "cores" else self.max_parallel
+            workers = min(workers, cap)
+
+        return max(workers, 1)
 
     def add_action_likes(self, main: Action | ActionGroup | None, post: Action | ActionGroup | None) -> None:
         """Add two Actions / ActionGroups to the main and the postprocessing queues.
@@ -151,9 +177,7 @@ class Builderer:
 
                 raise RuntimeError("Error execution action")
 
-        executor = concurrent.futures.ThreadPoolExecutor(
-            group.num_parallel if self.max_parallel is None else min(group.num_parallel, self.max_parallel)
-        )
+        executor = concurrent.futures.ThreadPoolExecutor(self._num_workers(group))
 
         fs = [executor.submit(run_in_context, action) for action in group.actions]
 

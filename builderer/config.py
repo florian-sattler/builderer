@@ -10,6 +10,9 @@ import yaml
 import builderer._documentation as docs
 import builderer
 
+# Parallelism in the config: a positive integer, "cores" (CPU count) or "all" (every action in the group).
+NumParallel = pydantic.PositiveInt | typing.Literal["cores", "all"]
+
 
 def _parse_step_by_type(candidates: tuple[type[pydantic.BaseModel], ...], v: typing.Any) -> typing.Any:
     """Parse a single step dict into the matching step model based on its ``type``."""
@@ -112,7 +115,7 @@ class BuildImages(_StepBase):
     push: bool = pydantic.Field(default=True, description=docs.step_build_push)
     qualified: bool = pydantic.Field(default=True, description=docs.step_build_qualified)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_build_extra_tags)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl.format(1))
+    num_parallel: NumParallel = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl.format(1))
 
     @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
@@ -196,7 +199,7 @@ class ForwardImages(_StepBase):
     type: typing.Literal["forward_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_forward_names)
     extra_tags: list[str] | None = pydantic.Field(default=None, description=docs.step_forward_extra_tags)
-    num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
+    num_parallel: NumParallel = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
     @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, builderer.ActionGroup | None]:
@@ -259,7 +262,7 @@ class PullImages(_StepBase):
 
     type: typing.Literal["pull_images"] = pydantic.Field(description=docs.step_type)
     names: list[str] = pydantic.Field(description=docs.step_pull_names)
-    num_parallel: int = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
+    num_parallel: NumParallel = pydantic.Field(default=4, description=docs.step_num_parallel_tmpl.format(4))
 
     @typing_extensions.override
     def create(self, factory: builderer.ActionFactory) -> tuple[builderer.ActionGroup, None]:
@@ -278,7 +281,7 @@ class Group(_StepBase):
     """A group of actions which might be run in parallel."""
 
     type: typing.Literal["group"] = pydantic.Field(description=docs.step_type)
-    num_parallel: int = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl)
+    num_parallel: NumParallel = pydantic.Field(default=1, description=docs.step_num_parallel_tmpl.format(1))
     steps: list[Action | BuildImage | ExtractFromImage | ForwardImage | PullImage] = pydantic.Field(
         description=docs.conf_steps
     )
@@ -336,7 +339,7 @@ class Parameters(pydantic.BaseModel):
     backend: typing.Literal["docker", "podman"] | None = pydantic.Field(
         None, title=docs.arg_backend_title, description=docs.arg_backend_desc
     )
-    max_parallel: int | None = pydantic.Field(
+    max_parallel: pydantic.PositiveInt | typing.Literal["cores"] | None = pydantic.Field(
         None, title=docs.arg_max_parallel_title, description=docs.arg_max_parallel_desc
     )
 
