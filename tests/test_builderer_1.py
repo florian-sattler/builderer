@@ -2,6 +2,7 @@ import pathlib
 import sys
 
 import pytest
+from pytest_mock import MockerFixture
 
 from builderer.actions import Action, ActionGroup
 from builderer.builderer import Builderer
@@ -192,5 +193,75 @@ def test_run_error(empty_builderer: Builderer, capsys: pytest.CaptureFixture[str
         "Encountered error running:",
         "example output",
         "",
+        "",
+    ]
+
+
+def test_add_action_likes_main_only(empty_builderer: Builderer) -> None:
+    action = Action("only main", [])
+    empty_builderer.add_action_likes(action, None)
+
+    assert empty_builderer.actions_main == [action]
+    assert empty_builderer.actions_post == []
+
+
+def test_add_action_likes_post_only(empty_builderer: Builderer) -> None:
+    action = Action("only post", [])
+    empty_builderer.add_action_likes(None, action)
+
+    assert empty_builderer.actions_main == []
+    assert empty_builderer.actions_post == [action]
+
+
+def test_run_main_then_post_lifo(empty_builderer: Builderer, mocker: MockerFixture) -> None:
+    # run() processes the main queue in order, then the post queue in reverse
+    # (LIFO), dispatching Actions and ActionGroups to the right handler.
+    order: list[str] = []
+
+    def fake_run_action(_self: Builderer, action: Action) -> tuple[int, bytes]:
+        order.append(f"action:{action.name}")
+        return 0, b""
+
+    def fake_run_action_group(_self: Builderer, group: ActionGroup) -> tuple[int, bytes]:
+        order.append(f"group:{group.actions[0].name}")
+        return 0, b""
+
+    mocker.patch.object(Builderer, "run_action", fake_run_action)
+    mocker.patch.object(Builderer, "run_action_group", fake_run_action_group)
+
+    empty_builderer.add_action_likes(Action("main-1", []), Action("post-1", []))
+    empty_builderer.add_action_likes(ActionGroup([Action("main-group", [])], 1), Action("post-2", []))
+
+    ret = empty_builderer.run()
+
+    assert ret == 0
+    assert order == ["action:main-1", "group:main-group", "action:post-2", "action:post-1"]
+
+
+def test_run_unexpected_queue_entry(empty_builderer: Builderer) -> None:
+    empty_builderer.actions_main.append("not an action")  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError) as e:
+        empty_builderer.run()
+
+    assert "Unexpected queue entry" in str(e.value)
+
+
+def test_run_error_verbose(empty_builderer: Builderer, capsys: pytest.CaptureFixture[str]) -> None:
+    # In verbose mode run_cmd does not capture output, so run() must not print a
+    # separate captured-stdout block on error (the not-verbose branch is skipped).
+    empty_builderer.verbose = True
+    empty_builderer.add_action_likes(
+        Action("Failing action", [[sys.executable, "-c", "raise SystemExit(7)"]]),
+        None,
+    )
+    ret = empty_builderer.run()
+    captured = capsys.readouterr()
+
+    assert ret == 7
+    assert captured.out.split("\n") == [
+        "Failing action",
+        f"['{sys.executable}', '-c', 'raise SystemExit(7)']",
+        "Encountered error running:",
         "",
     ]
