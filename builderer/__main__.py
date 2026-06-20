@@ -12,6 +12,17 @@ from builderer.builderer import Builderer
 from builderer.config import BuildererConfig
 
 
+def _max_parallel(value: str) -> int | str:
+    """Parse the --max-parallel argument: either "cores" or a positive integer."""
+    if value == "cores":
+        return value
+
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("max-parallel needs to be a positive integer or 'cores'")
+    return parsed
+
+
 def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
     """Parse commandline arguments.
 
@@ -35,7 +46,7 @@ def parse_args(argv: list[str] | None = None) -> tuple[str, dict[str, Any]]:
     parser.add_argument("--verbose", action="store_true", default=None, help=docs.arg_verbose_desc)
     parser.add_argument("--simulate", action="store_true", default=None, help=docs.arg_simulate_desc)
     parser.add_argument("--backend", choices=["docker", "podman"], help=docs.arg_backend_desc)
-    parser.add_argument("--max-parallel", type=int, default=None, help=docs.arg_max_parallel_desc)
+    parser.add_argument("--max-parallel", type=_max_parallel, default=None, help=docs.arg_max_parallel_desc)
     parser.add_argument("--config", type=str, default=".builderer.yml", help=docs.arg_cli_config)
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 

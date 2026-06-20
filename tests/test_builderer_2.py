@@ -1,9 +1,11 @@
 import sys
 import threading
 import time
+import typing
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+from pytest_mock import MockerFixture
 
 from builderer import Action, ActionGroup, Builderer
 
@@ -216,6 +218,45 @@ def test_run_failure(builderer: Builderer, action_group_success_invalid: ActionG
     builderer.add_action_likes(main=action_group_success_invalid, post=None)
     returncode = builderer.run()
     assert returncode != 0
+
+
+def test_max_parallel_cores_allowed() -> None:
+    assert Builderer(max_parallel="cores").max_parallel == "cores"
+
+
+@pytest.mark.parametrize("value", ["all", "bogus"])
+def test_max_parallel_invalid_keyword(value: typing.Any) -> None:
+    with pytest.raises(ValueError) as e:
+        Builderer(max_parallel=value)
+
+    assert "max_parallel" in str(e.value)
+
+
+@pytest.mark.parametrize(
+    ("num_parallel", "max_parallel", "n_actions", "cpu", "expected"),
+    [
+        (3, None, 5, 4, 3),  # plain integer is used as-is
+        ("cores", None, 5, 4, 4),  # "cores" -> CPU count
+        ("all", None, 5, 4, 5),  # "all" -> number of actions in the group
+        ("all", None, 0, 4, 1),  # empty group clamps to at least one worker
+        (10, 2, 5, 4, 2),  # capped by an integer max_parallel
+        ("all", "cores", 5, 4, 4),  # "all" capped by "cores" max_parallel
+        ("cores", 2, 5, 8, 2),  # "cores" capped by an integer max_parallel
+    ],
+)
+def test_num_workers_resolution(
+    mocker: MockerFixture,
+    num_parallel: typing.Any,
+    max_parallel: typing.Any,
+    n_actions: int,
+    cpu: int,
+    expected: int,
+) -> None:
+    mocker.patch("builderer.builderer.os.cpu_count", return_value=cpu)
+    runner = Builderer(max_parallel=max_parallel)
+    group = ActionGroup([Action(f"a{i}", []) for i in range(n_actions)], num_parallel)
+
+    assert runner._num_workers(group) == expected
 
 
 def test_max_parallel_caps_concurrency() -> None:

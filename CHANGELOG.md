@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `num_parallel` (on `build_images`, `forward_images`, `pull_images` and `group`) and the global
+  `max_parallel` parameter now accept automatic values in addition to a positive integer:
+
+  - `cores` — use the number of available CPU cores.
+  - `all` — run every action in the group in parallel (`num_parallel` only).
+
 ## [v2.0.0] - 2023-07-11
 
 ### Added

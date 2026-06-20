@@ -607,3 +607,28 @@ def test_group_config_errors(nested: typing.Any, expected_text: str) -> None:
         builderer.config.BuildererConfig.model_validate(data)
 
     assert expected_text in str(e.value)
+
+
+@pytest.mark.parametrize("value", [1, 8, "cores", "all"])
+def test_num_parallel_accepts_keywords_and_positive_ints(value: typing.Any) -> None:
+    step = builderer.config.BuildImages(type="build_images", directories=["svc"], num_parallel=value)
+    assert step.num_parallel == value
+
+
+@pytest.mark.parametrize("value", [0, -1, "bogus"])
+def test_num_parallel_rejects_invalid(value: typing.Any) -> None:
+    with pytest.raises(pydantic.ValidationError):
+        builderer.config.BuildImages(type="build_images", directories=["svc"], num_parallel=value)
+
+
+@pytest.mark.parametrize("value", [1, 8, "cores", None])
+def test_parameters_max_parallel_accepts_valid(value: typing.Any) -> None:
+    params = builderer.config.Parameters(max_parallel=value)
+    assert params.max_parallel == value
+
+
+@pytest.mark.parametrize("value", [0, -1, "all", "bogus"])
+def test_parameters_max_parallel_rejects_invalid(value: typing.Any) -> None:
+    # max_parallel is a global cap, so it has no "all" keyword.
+    with pytest.raises(pydantic.ValidationError):
+        builderer.config.Parameters(max_parallel=value)
