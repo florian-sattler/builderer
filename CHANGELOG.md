@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.0.0] - 2026-06-20
+
 ### Added
 
 - `num_parallel` (on `build_images`, `forward_images`, `pull_images` and `group`) and the global
@@ -18,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Steps may now declare an optional `id`. Use `--skip <id>` to exclude steps and `--only <id>` to run
   just the named step(s) from the command line. Both flags may be repeated and work with steps nested
   in a group (`--only` on a group runs the whole group). `--skip` takes precedence over `--only`.
+
+- Support for Python 3.14.
+
+### Changed
+
+- **Breaking (library API):** migrated from pydantic v1 to pydantic v2. `.builderer.yml` files remain
+  compatible, but code importing `builderer` must use the pydantic v2 API (for example
+  `model_validate` / `model_dump` instead of `parse_obj` / `dict`).
+- Updated dependencies.
 
 ### Fixed
 
@@ -172,7 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changelog
 - Use bump2version
 
-[unreleased]: https://github.com/florian-sattler/builderer/compare/v2.0.0...HEAD
+[unreleased]: https://github.com/florian-sattler/builderer/compare/v3.0.0...HEAD
+[v3.0.0]: https://github.com/florian-sattler/builderer/compare/v2.0.0...v3.0.0
 [v2.0.0]: https://github.com/florian-sattler/builderer/compare/v1.1.0...v2.0.0
 [v1.1.0]: https://github.com/florian-sattler/builderer/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/florian-sattler/builderer/compare/v0.4.1...v1.0.0
